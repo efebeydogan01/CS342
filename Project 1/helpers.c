@@ -12,6 +12,11 @@ typedef struct WordStruct {
     int maxSize; // keep track of max size so know when to expand array
 } WordStruct;
 
+typedef struct WordFreqPairs {
+    char* word;
+    int freq;
+} WordFreqPairs;
+
 void createWordStruct(WordStruct* wordStruct, int arraySize) {
     wordStruct->words = malloc( arraySize * sizeof(char));
     wordStruct->frequencies = malloc( arraySize * sizeof(int));
@@ -28,7 +33,7 @@ void addWord(WordStruct* wordStruct, char* word) {
             exists = 1;
             break;
     }
-    // add the word to tge list if it isn't already added
+    // add the word to the list if it isn't already added
     if (!exists) {
         // if there isn't enough space in the array, expand it
         if (wordStruct->maxSize <= wordStruct->curSize) {
@@ -59,9 +64,9 @@ void readFile(char* fileName, WordStruct* wordStruct) {
     }
 
     char curWord[WORD_SIZE] = "";
-    char curChar;
+    char ch;
     do {
-        ch = fgetc(ptr);
+        ch = fgetc(fptr);
         if ( ch != ' ' && ch != '\t' && ch != '\n' && ch != EOF) {
             ch = toupper(ch);
             strncat(curWord, &ch, 1);
@@ -73,5 +78,33 @@ void readFile(char* fileName, WordStruct* wordStruct) {
             strcopy(curWord, "");
         }
     } while (ch != EOF);
-    fclose(ptr);
+    fclose(fptr);
+}
+
+void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
+    // a function to sort word frequencies, and the word array accordingly
+    int wordNum = wordStruct->curSize;
+    // the structs will be sorted
+    for (int i = 0; i < wordNum; i++) {
+        pairs[i].word =  wordStruct->words[i];
+        pairs[i].freq = wordStruct->frequencies[i];
+    }
+
+    // sort the pairs based on frequency
+    qsort(pairs, wordNum, sizeof(struct WordFreqPairs), sortHelper);
+}
+
+int sortHelper(const void *a, const void *b) {
+    // callback function for qsort in sortFreqs() function
+    int x = *(int*)a;
+    int y = *(int*)b;
+    return (x < y) - (x > y);
+}
+
+void freeMemory(WordStruct* wordStruct) {
+    for (int i = 0; i < wordStruct->curSize; i++) {
+        free(wordStruct->words[i]);
+    }
+    free(wordStruct->words);
+    free(wordStruct->frequencies);
 }
