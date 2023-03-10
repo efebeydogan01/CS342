@@ -15,11 +15,12 @@ typedef struct WordStruct {
 typedef struct WordFreqPairs {
     char* word;
     int freq;
+    int noWords;
 } WordFreqPairs;
 
 void createWordStruct(WordStruct* wordStruct, int arraySize) {
-    wordStruct->words = malloc( arraySize * sizeof(char));
-    wordStruct->frequencies = malloc( arraySize * sizeof(int));
+    wordStruct->words = (char**) malloc( arraySize * sizeof(char*));
+    wordStruct->frequencies = (int*) malloc( arraySize * sizeof(int));
     wordStruct->curSize = 0;
     wordStruct->maxSize = arraySize;
 }
@@ -38,11 +39,11 @@ void addWord(WordStruct* wordStruct, char* word) {
         // if there isn't enough space in the array, expand it
         if (wordStruct->maxSize <= wordStruct->curSize) {
             wordStruct->maxSize = wordStruct->maxSize * 2;
-            wordStruct->words = realloc(wordStruct->words, wordStruct->maxSize * sizeof(char*));
-            wordStruct->frequencies = realloc(wordStruct->frequencies, wordStruct->maxSize * sizeof(int));
+            wordStruct->words = (char**) realloc(wordStruct->words, wordStruct->maxSize * sizeof(char*));
+            wordStruct->frequencies = (int*) realloc(wordStruct->frequencies, wordStruct->maxSize * sizeof(int));
         }
         // allocate space for new word
-        wordStruct->words[wordStruct->curSize] = malloc(sizeof(char) * (strlen(word) + 1));
+        wordStruct->words[wordStruct->curSize] = (char*) malloc(sizeof(char) * (strlen(word) + 1));
         strcpy(wordStruct->words[wordStruct->curSize], word);
         wordStruct->curSize = wordStruct->curSize + 1;
     }
@@ -54,7 +55,6 @@ void addWord(WordStruct* wordStruct, char* word) {
 
 void readFile(char* fileName, WordStruct* wordStruct) {
     FILE* fptr;
-    char word[WORD_SIZE];
     // open file
     fptr = fopen(fileName, "r");
     // exit if file cannot be opened
@@ -75,23 +75,10 @@ void readFile(char* fileName, WordStruct* wordStruct) {
             if (strlen(curWord) > 0) {
                 addWord( wordStruct, curWord);
             }
-            strcopy(curWord, "");
+            strcpy(curWord, "");
         }
     } while (ch != EOF);
     fclose(fptr);
-}
-
-void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
-    // a function to sort word frequencies, and the word array accordingly
-    int wordNum = wordStruct->curSize;
-    // the structs will be sorted
-    for (int i = 0; i < wordNum; i++) {
-        pairs[i].word =  wordStruct->words[i];
-        pairs[i].freq = wordStruct->frequencies[i];
-    }
-
-    // sort the pairs based on frequency
-    qsort(pairs, wordNum, sizeof(struct WordFreqPairs), sortHelper);
 }
 
 int sortHelper(const void *a, const void *b) {
@@ -101,10 +88,31 @@ int sortHelper(const void *a, const void *b) {
     return (x < y) - (x > y);
 }
 
+void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
+    // a function to sort word frequencies, and the word array accordingly
+    int wordNum = wordStruct->curSize;
+    // the structs will be sorted
+    for (int i = 0; i < wordNum; i++) {
+        pairs[i].word = (char*) malloc(sizeof(char) * (strlen(wordStruct->words[i]) + 1));
+        // pairs[i].word =  wordStruct->words[i]; 
+        strcpy(pairs[i].word, wordStruct->words[i]);
+        pairs[i].freq = wordStruct->frequencies[i];
+    }
+
+    // sort the pairs based on frequency
+    qsort(pairs, wordNum, sizeof(struct WordFreqPairs), sortHelper);
+}
+
 void freeMemory(WordStruct* wordStruct) {
     for (int i = 0; i < wordStruct->curSize; i++) {
         free(wordStruct->words[i]);
     }
     free(wordStruct->words);
     free(wordStruct->frequencies);
+}
+
+void freeWordFreqPairs(WordFreqPairs* pairs, int size) {
+    for (int i = 0; i < size; i++) {
+        free(pairs[i].word);
+    }
 }

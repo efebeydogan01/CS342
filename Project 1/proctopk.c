@@ -20,7 +20,7 @@ int main( int argc, char* argv[]) {
     // SHOULD THIS BE 64 OR 63?
     const int NUM_CHARS = 64;
     // shared memory will store the number of words returned by each process + the word/freq pairs
-    const int SIZE = N*sizeof(int) + K*N*sizeof(struct WordFreqPairs);
+    const int SIZE = K*N*sizeof(struct WordFreqPairs);
     const int INITIAL_ARRAY_SIZE = 2;
     char fileNames[N][NUM_CHARS]; // array to hold the names of input files
 
@@ -30,10 +30,10 @@ int main( int argc, char* argv[]) {
 
     // Creating shared memory for processes
     int shm_fd; 
-    void *shmem;
+    WordFreqPairs *shmem;
     shm_fd = shm_open(SNAME, O_CREAT | O_RDWR, 0666);
     ftruncate(shm_fd,SIZE); // set size of shared memory
-    shmem = mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shmem = (WordFreqPairs *) mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (shmem == MAP_FAILED) { printf("Map failed\n"); return -1; }
 
     for (int i = 0; i < N; i++) {
@@ -43,17 +43,24 @@ int main( int argc, char* argv[]) {
             createWordStruct(&wordStruct, INITIAL_ARRAY_SIZE);
             char* fileName = fileNames[i];
             readFile(fileName, &wordStruct);
-
-            WordFreqPairs wordFreqPairs[wordStruct.curSize];
+            int size = wordStruct.curSize;
+            WordFreqPairs wordFreqPairs[size];
             // returns the array of word-struct pairs in descending sorted order
-            sortFreqs(&wordStruct, &wordFreqPairs);
+            sortFreqs(&wordStruct, wordFreqPairs);
 
-            int minimum = min(K, wordStruct.curSize);
+            int minimum = K < size ? K : size;
             // copy the word and frequency pairs into the shared memory
             for (int j = 0; j < minimum; j++) {
-                memcpy(shmem + i*)
+                // store the number of words in the first word/freq pair
+                if (j == 0) {
+                    wordFreqPairs[j].noWords = minimum;
+                }
+                // 0 1 2 ... K - 1 K K+1 ... 2K-1
+                shmem[j + i*K] = wordFreqPairs[j];
             }
-
+            freeMemory(&wordStruct);
+            freeWordFreqPairs(wordFreqPairs, size);
+            exit(0);
         }
     }
 
