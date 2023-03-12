@@ -13,7 +13,7 @@ typedef struct WordStruct {
 } WordStruct;
 
 typedef struct WordFreqPairs {
-    char* word;
+    char word[WORD_SIZE];
     int freq;
     int noWords;
 } WordFreqPairs;
@@ -25,17 +25,18 @@ void createWordStruct(WordStruct* wordStruct, int arraySize) {
     wordStruct->maxSize = arraySize;
 }
 
-void addWord(WordStruct* wordStruct, char* word) {
-    // check if the word already exists in the frequencies array
-    int exists = 0;
+void addWordShmem(WordStruct* wordStruct, char* word, int frequency) {
+    // check if the word already exists in the words array
+    int isUnique = 1;
     int i;
     for (i = 0; i < wordStruct->curSize; i++) {
-        if (strcmp(wordStruct->words[i], word) == 0) 
-            exists = 1;
+        if (strcmp(wordStruct->words[i], word) == 0) {
+            isUnique = 0;
             break;
+        }
     }
     // add the word to the list if it isn't already added
-    if (!exists) {
+    if (isUnique) {
         // if there isn't enough space in the array, expand it
         if (wordStruct->maxSize <= wordStruct->curSize) {
             wordStruct->maxSize = wordStruct->maxSize * 2;
@@ -45,11 +46,42 @@ void addWord(WordStruct* wordStruct, char* word) {
         // allocate space for new word
         wordStruct->words[wordStruct->curSize] = (char*) malloc(sizeof(char) * (strlen(word) + 1));
         strcpy(wordStruct->words[wordStruct->curSize], word);
+        wordStruct->frequencies[wordStruct->curSize] = frequency;
         wordStruct->curSize = wordStruct->curSize + 1;
     }
     else {
         // if the word already exists, increase its frequency count
-        wordStruct->frequencies[i - 1]++;
+        wordStruct->frequencies[i] += frequency;
+    }
+}
+
+void addWord(WordStruct* wordStruct, char* word) {
+    // check if the word already exists in the words array
+    int isUnique = 1;
+    int i;
+    for (i = 0; i < wordStruct->curSize; i++) {
+        if (strcmp(wordStruct->words[i], word) == 0) {
+            isUnique = 0;
+            break;
+        }
+    }
+    // add the word to the list if it isn't already added
+    if (isUnique) {
+        // if there isn't enough space in the array, expand it
+        if (wordStruct->maxSize <= wordStruct->curSize) {
+            wordStruct->maxSize = wordStruct->maxSize * 2;
+            wordStruct->words = (char**) realloc(wordStruct->words, wordStruct->maxSize * sizeof(char*));
+            wordStruct->frequencies = (int*) realloc(wordStruct->frequencies, wordStruct->maxSize * sizeof(int));
+        }
+        // allocate space for new word
+        wordStruct->words[wordStruct->curSize] = (char*) malloc(sizeof(char) * (strlen(word) + 1));
+        strcpy(wordStruct->words[wordStruct->curSize], word);
+        wordStruct->frequencies[wordStruct->curSize] = 1;
+        wordStruct->curSize = wordStruct->curSize + 1;
+    }
+    else {
+        // if the word already exists, increase its frequency count
+        wordStruct->frequencies[i]++;
     }
 }
 
@@ -83,9 +115,7 @@ void readFile(char* fileName, WordStruct* wordStruct) {
 
 int sortHelper(const void *a, const void *b) {
     // callback function for qsort in sortFreqs() function
-    int x = *(int*)a;
-    int y = *(int*)b;
-    return (x < y) - (x > y);
+    return ((const struct WordFreqPairs *) a)->freq <= ((const struct WordFreqPairs *) b)->freq;
 }
 
 void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
@@ -93,7 +123,7 @@ void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
     int wordNum = wordStruct->curSize;
     // the structs will be sorted
     for (int i = 0; i < wordNum; i++) {
-        pairs[i].word = (char*) malloc(sizeof(char) * (strlen(wordStruct->words[i]) + 1));
+        // pairs[i].word = (char*) malloc(sizeof(char) * (strlen(wordStruct->words[i]) + 1));
         // pairs[i].word =  wordStruct->words[i]; 
         strcpy(pairs[i].word, wordStruct->words[i]);
         pairs[i].freq = wordStruct->frequencies[i];
@@ -109,10 +139,4 @@ void freeMemory(WordStruct* wordStruct) {
     }
     free(wordStruct->words);
     free(wordStruct->frequencies);
-}
-
-void freeWordFreqPairs(WordFreqPairs* pairs, int size) {
-    for (int i = 0; i < size; i++) {
-        free(pairs[i].word);
-    }
 }

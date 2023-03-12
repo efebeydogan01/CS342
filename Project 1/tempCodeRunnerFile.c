@@ -1,0 +1,1 @@
+printf("%d", wordStruct.frequencies[0]);
