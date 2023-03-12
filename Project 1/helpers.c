@@ -25,7 +25,7 @@ void createWordStruct(WordStruct* wordStruct, int arraySize) {
     wordStruct->maxSize = arraySize;
 }
 
-void addWordShmem(WordStruct* wordStruct, char* word, int frequency) {
+void addWord(WordStruct* wordStruct, char* word, int frequency) {
     // check if the word already exists in the words array
     int isUnique = 1;
     int i;
@@ -55,36 +55,6 @@ void addWordShmem(WordStruct* wordStruct, char* word, int frequency) {
     }
 }
 
-void addWord(WordStruct* wordStruct, char* word) {
-    // check if the word already exists in the words array
-    int isUnique = 1;
-    int i;
-    for (i = 0; i < wordStruct->curSize; i++) {
-        if (strcmp(wordStruct->words[i], word) == 0) {
-            isUnique = 0;
-            break;
-        }
-    }
-    // add the word to the list if it isn't already added
-    if (isUnique) {
-        // if there isn't enough space in the array, expand it
-        if (wordStruct->maxSize <= wordStruct->curSize) {
-            wordStruct->maxSize = wordStruct->maxSize * 2;
-            wordStruct->words = (char**) realloc(wordStruct->words, wordStruct->maxSize * sizeof(char*));
-            wordStruct->frequencies = (int*) realloc(wordStruct->frequencies, wordStruct->maxSize * sizeof(int));
-        }
-        // allocate space for new word
-        wordStruct->words[wordStruct->curSize] = (char*) malloc(sizeof(char) * (strlen(word) + 1));
-        strcpy(wordStruct->words[wordStruct->curSize], word);
-        wordStruct->frequencies[wordStruct->curSize] = 1;
-        wordStruct->curSize = wordStruct->curSize + 1;
-    }
-    else {
-        // if the word already exists, increase its frequency count
-        wordStruct->frequencies[i]++;
-    }
-}
-
 void readFile(char* fileName, WordStruct* wordStruct) {
     FILE* fptr;
     // open file
@@ -105,7 +75,7 @@ void readFile(char* fileName, WordStruct* wordStruct) {
         }
         else {
             if (strlen(curWord) > 0) {
-                addWord( wordStruct, curWord);
+                addWord( wordStruct, curWord, 1);
             }
             strcpy(curWord, "");
         }

@@ -74,7 +74,7 @@ int main( int argc, char* argv[]) {
         int noWords = shmem[i*K].noWords;
 
         for (int j = 0; j < noWords; j++) {
-            addWordShmem(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
+            addWord(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
         } 
     }
 
