@@ -94,8 +94,6 @@ void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
     int wordNum = wordStruct->curSize;
     // the structs will be sorted
     for (int i = 0; i < wordNum; i++) {
-        // pairs[i].word = (char*) malloc(sizeof(char) * (strlen(wordStruct->words[i]) + 1));
-        // pairs[i].word =  wordStruct->words[i]; 
         strcpy(pairs[i].word, wordStruct->words[i]);
         pairs[i].freq = wordStruct->frequencies[i];
     }
