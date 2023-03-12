@@ -11,7 +11,7 @@
 #define SNAME "shmname"
 
 // run instructions:
-// g++ proctopk.c -o proctopk
+// g++ proctopk.c -o proctopk (or type make)
 // ./proctopk K outfile N ...fileNames...
 // sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
 
