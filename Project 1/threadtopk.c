@@ -36,11 +36,16 @@ static void* processFiles(void *param) {
 
     wordFreqPairs[arrayIndex] = (WordFreqPairs*) malloc(minimum * sizeof(WordFreqPairs));
 
+    if (minimum == 0) { // if the file is empty, that block of memory is not valid
+        wordFreqPairs[arrayIndex][0].valid = 0;
+    }
+
     // copy the word and frequency pairs into the global pairs array
     for (int i = 0; i < minimum; i++) {
         // store the number of words in the first word/freq pair
         if (i == 0) {
             tempPair[i].noWords = minimum;
+            tempPair[i].valid = 1;
         }
 
         wordFreqPairs[arrayIndex][i] = tempPair[i];
@@ -72,8 +77,8 @@ int main( int argc, char* argv[]) {
     int arrayIndex[N]; // array to hold the array indices of every thread
     for (int i = 0; i < N; i++) { // create N threads to process N files
         arrayIndex[i] = i;
-        int err;
-        if (err = pthread_create(&pid[i], NULL, processFiles, (void *) &arrayIndex[i])) {
+        int err = pthread_create(&pid[i], NULL, processFiles, (void *) &arrayIndex[i]);
+        if (err) {
             printf("error occured: %d\n",  err);
             exit(1);
         }
@@ -88,10 +93,12 @@ int main( int argc, char* argv[]) {
             printf("Error joining threads!");
             exit(1);
         }
-        int noWords = wordFreqPairs[i][0].noWords;
+        if (wordFreqPairs[i][0].valid) { // do this if the file wasn't empty
+            int noWords = wordFreqPairs[i][0].noWords;
 
-        for (int j = 0; j < noWords; j++) {
-            addWord(&res, wordFreqPairs[i][j].word, wordFreqPairs[i][j].freq);
+            for (int j = 0; j < noWords; j++) {
+                addWord(&res, wordFreqPairs[i][j].word, wordFreqPairs[i][j].freq);
+            }
         }
     }
 
@@ -123,11 +130,11 @@ int main( int argc, char* argv[]) {
     for (int i = 0; i < N; i++) {
         freeMemory(&wordStruct[i]);
         free(wordFreqPairs[i]);
-        free(fileNames[i]);
     }
     free(wordStruct);
     free(wordFreqPairs);
     free(fileNames);
+    freeMemory(&res);
 
     return 0;
 }

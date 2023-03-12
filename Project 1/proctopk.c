@@ -50,11 +50,16 @@ int main( int argc, char* argv[]) {
             sortFreqs(&wordStruct, wordFreqPairs);
             int minimum = K < size ? K : size;
 
+            if (minimum == 0) { // if the file is empty, that block of memory is not valid
+                shmem[i*K].valid = 0;
+            }
+
             // copy the word and frequency pairs into the shared memory
             for (int j = 0; j < minimum; j++) {
                 // store the number of words in the first word/freq pair
                 if (j == 0) {
                     wordFreqPairs[j].noWords = minimum;
+                    wordFreqPairs[j].valid = 1;
                 }
                 // 0 1 2 ... K - 1 K K+1 ... 2K-1
                 shmem[j + i*K] = wordFreqPairs[j];
@@ -71,11 +76,13 @@ int main( int argc, char* argv[]) {
     createWordStruct(&res, INITIAL_ARRAY_SIZE);
     for (int i = 0; i < N; i++) {
         wait(NULL);
-        int noWords = shmem[i*K].noWords;
+        if (shmem[i*K].valid) { // do this if the file wasn't empty
+            int noWords = shmem[i*K].noWords;
 
-        for (int j = 0; j < noWords; j++) {
-            addWord(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
-        } 
+            for (int j = 0; j < noWords; j++) {
+                addWord(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
+            } 
+        }
     }
 
     // sort the words based on frequency

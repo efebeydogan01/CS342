@@ -16,6 +16,7 @@ typedef struct WordFreqPairs {
     char word[WORD_SIZE];
     int freq;
     int noWords;
+    int valid;
 } WordFreqPairs;
 
 void createWordStruct(WordStruct* wordStruct, int arraySize) {
