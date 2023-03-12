@@ -11,9 +11,9 @@
 #define SNAME "shmname"
 
 // run instructions:
-// g++ proctopk.c -o main
-// ./main K outfile N ...fileNames...
-// sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./main 10 out.txt 2 in1.txt in2.txt
+// g++ proctopk.c -o proctopk
+// ./proctopk K outfile N ...fileNames...
+// sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
 
 int main( int argc, char* argv[]) {
     int K = atoi(argv[1]); // number of words to find
@@ -46,7 +46,7 @@ int main( int argc, char* argv[]) {
             readFile(fileName, &wordStruct);
             int size = wordStruct.curSize;
             WordFreqPairs* wordFreqPairs = (WordFreqPairs*) malloc(size * sizeof(WordFreqPairs));
-            // returns the array of word-struct pairs in descending sorted order
+            // returns the array of word-freq pairs in descending sorted order
             sortFreqs(&wordStruct, wordFreqPairs);
             int minimum = K < size ? K : size;
 
@@ -103,6 +103,7 @@ int main( int argc, char* argv[]) {
     fclose(fptr);
     free(wordFreqPairs);
     freeMemory(&res);
+    // remove the shared memory
     if (shm_unlink(SNAME) == -1) {
         printf("Error removing %s\n",SNAME); 
         exit(-1);
