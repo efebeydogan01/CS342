@@ -144,6 +144,6 @@ int main( int argc, char* argv[]) {
 
     end = clock();
     execution_time = ((double)(end - start))/CLOCKS_PER_SEC*1000;
-    printf("Time taken to execute in ms : %f\n", execution_time);
+    printf("Time taken to execute in ms : %.2f\n", execution_time);
     return 0;
 }
