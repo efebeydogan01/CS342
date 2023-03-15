@@ -59,7 +59,6 @@ int main( int argc, char* argv[]) {
     K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
     int N = atoi(argv[3]); // number of input files
-    // SHOULD THIS BE 64 OR 63?
     const int NUM_CHARS = 64;
 
     // allocate space for fileNames array
@@ -85,14 +84,16 @@ int main( int argc, char* argv[]) {
     }
     
     // back to main thread
-    WordStruct res;
-    createWordStruct(&res, INITIAL_ARRAY_SIZE);
     // join the threads
     for (int i = 0; i < N; i++) {
         if ( pthread_join( pid[i], NULL)) {
             printf("Error joining threads!");
             exit(1);
         }
+    }
+    WordStruct res;
+    createWordStruct(&res, INITIAL_ARRAY_SIZE);
+    for (int i = 0; i < N; i++) {
         if (wordFreqPairs[i][0].valid) { // do this if the file wasn't empty
             int noWords = wordFreqPairs[i][0].noWords;
 

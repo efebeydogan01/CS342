@@ -70,7 +70,7 @@ void readFile(char* fileName, WordStruct* wordStruct) {
     char ch;
     do {
         ch = fgetc(fptr);
-        if ( ch != ' ' && ch != '\t' && ch != '\n' && ch != EOF) {
+        if ( !isspace(ch) && ch != EOF) {
             ch = toupper(ch);
             strncat(curWord, &ch, 1);
         }
