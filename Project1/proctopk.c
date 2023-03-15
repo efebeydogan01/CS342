@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include<time.h>
 #include "helpers.c"
 #define SNAME "shmname"
 
@@ -16,6 +17,10 @@
 // sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
 
 int main( int argc, char* argv[]) {
+    clock_t start, end;
+    double execution_time;
+    start = clock();
+
     int K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
     int N = atoi(argv[3]); // number of input files
@@ -118,5 +123,8 @@ int main( int argc, char* argv[]) {
         exit(-1);
     }
 
+    end = clock();
+    execution_time = ((double)(end - start))/CLOCKS_PER_SEC;
+    printf("Time taken to execute in seconds : %f", execution_time);
     return 0;
 }
