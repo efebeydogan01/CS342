@@ -15,7 +15,7 @@
 // global variables for threads
 char** fileNames; // array to hold the names of input files
 WordStruct *wordStruct; // holds the words and frequencies read by every thread
-WordFreqPairs **wordFreqPairs; // holds the K most frequent words read by every thread
+WordFreqArray *wordFreqArray; // holds the K most frequent words read by every thread
 int K; // command line argument
 const int INITIAL_ARRAY_SIZE = 2;
 
@@ -34,23 +34,13 @@ static void* processFiles(void *param) {
     sortFreqs(&wordStruct[arrayIndex], tempPair);
     int minimum = K < size ? K : size; // find if there are K most frequent words or not
 
-    wordFreqPairs[arrayIndex] = (WordFreqPairs*) malloc(minimum * sizeof(WordFreqPairs));
-
-    if (minimum == 0) { // if the file is empty, that block of memory is not valid
-        wordFreqPairs[arrayIndex][0].valid = 0;
+    if (minimum <= 0) { // if the file is empty, that block of memory is not valid
+        wordFreqArray[arrayIndex].valid = 0;
+    }
+    else {
+        createWordFreqArray(tempPair, &wordFreqArray[arrayIndex], minimum);
     }
 
-    // copy the word and frequency pairs into the global pairs array
-    for (int i = 0; i < minimum; i++) {
-        // store the number of words in the first word/freq pair
-        if (i == 0) {
-            tempPair[i].noWords = minimum;
-            tempPair[i].valid = 1;
-        }
-
-        wordFreqPairs[arrayIndex][i] = tempPair[i];
-        strcpy(wordFreqPairs[arrayIndex][i].word, tempPair[i].word);
-    }
     free(tempPair);
     pthread_exit(NULL);
 }
@@ -73,8 +63,8 @@ int main( int argc, char* argv[]) {
 
     // allocate space for WordStruct array
     wordStruct = (WordStruct *) calloc(N, sizeof(WordStruct));
-    // allocate space for WordFreqPairs array
-    wordFreqPairs = (WordFreqPairs **) calloc(N, sizeof(WordFreqPairs*));
+    // allocate space for wordFreqArray
+    wordFreqArray = (WordFreqArray *) calloc(N, sizeof(struct WordFreqArray));
 
     pthread_t pid[N]; // array to hold thread ids
     int arrayIndex[N]; // array to hold the array indices of every thread
@@ -98,11 +88,11 @@ int main( int argc, char* argv[]) {
     WordStruct res;
     createWordStruct(&res, INITIAL_ARRAY_SIZE);
     for (int i = 0; i < N; i++) {
-        if (wordFreqPairs[i][0].valid) { // do this if the file wasn't empty
-            int noWords = wordFreqPairs[i][0].noWords;
+        if (wordFreqArray[i].valid) { // do this if the file wasn't empty
+            int noWords = wordFreqArray[i].size;
 
             for (int j = 0; j < noWords; j++) {
-                addWord(&res, wordFreqPairs[i][j].word, wordFreqPairs[i][j].freq);
+                addWord(&res, wordFreqArray[i].arr[j].word, wordFreqArray[i].arr[j].freq);
             }
         }
     }
@@ -131,13 +121,12 @@ int main( int argc, char* argv[]) {
     fclose(fptr);
     free(temp);
 
-    // free wordStruct and wordFreqPairs
+    // free wordStruct
     for (int i = 0; i < N; i++) {
         freeMemory(&wordStruct[i]);
-        free(wordFreqPairs[i]);
     }
+    free(wordFreqArray);
     free(wordStruct);
-    free(wordFreqPairs);
     free(fileNames);
     freeMemory(&res);
 

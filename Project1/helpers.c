@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #define WORD_SIZE 64
+#define MAX_K 1000
 
 typedef struct WordStruct {
     char** words;
@@ -15,15 +16,31 @@ typedef struct WordStruct {
 typedef struct WordFreqPairs {
     char word[WORD_SIZE];
     int freq;
-    int noWords;
-    int valid;
 } WordFreqPairs;
+
+typedef struct WordFreqArray {
+    int valid;
+    int size;
+    WordFreqPairs arr[MAX_K];
+} WordFreqArray;
 
 void createWordStruct(WordStruct* wordStruct, int arraySize) {
     wordStruct->words = (char**) malloc( arraySize * sizeof(char*));
     wordStruct->frequencies = (int*) malloc( arraySize * sizeof(int));
     wordStruct->curSize = 0;
     wordStruct->maxSize = arraySize;
+}
+
+void createWordFreqArray(WordFreqPairs *pairs, WordFreqArray *wordFreqArray, int min) {
+    // copy the words into shared memory
+    for (int i = 0; i < min; i++) {
+        // set the frequency of the word
+        wordFreqArray->arr[i].freq = pairs[i].freq;
+        // copy the word
+        strcpy(wordFreqArray->arr[i].word, pairs[i].word);
+    }
+    wordFreqArray->valid = 1;
+    wordFreqArray->size = min;
 }
 
 void addWord(WordStruct* wordStruct, char* word, int frequency) {

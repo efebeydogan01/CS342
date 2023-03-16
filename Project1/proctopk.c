@@ -26,7 +26,7 @@ int main( int argc, char* argv[]) {
     int N = atoi(argv[3]); // number of input files
     const int NUM_CHARS = 64;
     // shared memory will store the word/freq pairs
-    const int SIZE = K*N*sizeof(struct WordFreqPairs);
+    const int SIZE = N*sizeof(struct WordFreqArray);
     const int INITIAL_ARRAY_SIZE = 2;
     char fileNames[N][NUM_CHARS]; // array to hold the names of input files
     for (int i = 0; i < N; i++) {
@@ -35,10 +35,10 @@ int main( int argc, char* argv[]) {
 
     // Creating shared memory for processes
     int shm_fd; 
-    WordFreqPairs *shmem;
+    WordFreqArray *shmem;
     shm_fd = shm_open(SNAME, O_CREAT | O_RDWR, 0666);
     ftruncate(shm_fd, SIZE); // set size of shared memory
-    shmem = (WordFreqPairs *) mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shmem = (WordFreqArray *) mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (shmem == MAP_FAILED) { printf("Map failed\n"); return -1; }
 
     for (int i = 0; i < N; i++) {
@@ -54,20 +54,12 @@ int main( int argc, char* argv[]) {
             sortFreqs(&wordStruct, wordFreqPairs);
             int minimum = K < size ? K : size;
 
-            if (minimum == 0) { // if the file is empty, that block of memory is not valid
-                shmem[i*K].valid = 0;
+            if (minimum <= 0) { // if the file is empty, that block of memory is not valid
+                shmem[i].valid = 0;
             }
-
-            // copy the word and frequency pairs into the shared memory
-            for (int j = 0; j < minimum; j++) {
-                // store the number of words in the first word/freq pair
-                if (j == 0) {
-                    wordFreqPairs[j].noWords = minimum;
-                    wordFreqPairs[j].valid = 1;
-                }
-                // 0 1 2 ... K - 1 K K+1 ... 2K-1
-                shmem[j + i*K] = wordFreqPairs[j];
-                strcpy(shmem[j + i*K].word, wordFreqPairs[j].word);
+            else {
+                // copy the word and frequency pairs into the shared memory
+                createWordFreqArray(wordFreqPairs, &shmem[i], minimum);
             }
 
             freeMemory(&wordStruct);
@@ -83,11 +75,12 @@ int main( int argc, char* argv[]) {
     WordStruct res;
     createWordStruct(&res, INITIAL_ARRAY_SIZE);
     for (int i = 0; i < N; i++) {
-        if (shmem[i*K].valid) { // do this if the file wasn't empty
-            int noWords = shmem[i*K].noWords;
-
+        if (shmem[i].valid) { // do this if the file wasn't empty
+            int noWords = shmem[i].size;
+            // printf("%d\n", noWords);
             for (int j = 0; j < noWords; j++) {
-                addWord(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
+                // printf("%d\n", shmem[i].arr[j].freq);
+                addWord(&res, shmem[i].arr[j].word, shmem[i].arr[j].freq);
             } 
         }
     }
