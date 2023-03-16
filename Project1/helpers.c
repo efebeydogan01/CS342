@@ -86,7 +86,18 @@ void readFile(char* fileName, WordStruct* wordStruct) {
 
 int sortHelper(const void *a, const void *b) {
     // callback function for qsort in sortFreqs() function
-    return ((const struct WordFreqPairs *) a)->freq <= ((const struct WordFreqPairs *) b)->freq;
+
+    if ( ((const struct WordFreqPairs *) a)->freq < ((const struct WordFreqPairs *) b)->freq) {
+        return 1;
+    }
+    else if ( ((const struct WordFreqPairs *) a)->freq > ((const struct WordFreqPairs *) b)->freq) {
+        return 0;
+    }
+    // the frequencies are equal
+    int result = strcmp(((const struct WordFreqPairs *) a)->word, ((const struct WordFreqPairs *) b)->word);
+    if (result <= 0) // first word is lexicographically smaller so it should be chosen, the words cannot be the same
+        return 0;
+    return 1;
 }
 
 void sortFreqs(WordStruct* wordStruct, WordFreqPairs* pairs) {
