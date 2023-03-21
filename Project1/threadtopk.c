@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "helpers.c"
 
 // run instructions:
@@ -46,9 +47,9 @@ static void* processFiles(void *param) {
 }
 
 int main( int argc, char* argv[]) {
-    clock_t start, end;
-    double execution_time;
-    start = clock();
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, 0);
 
     K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
@@ -130,9 +131,9 @@ int main( int argc, char* argv[]) {
     free(fileNames);
     freeMemory(&res);
 
-
-    end = clock();
-    execution_time = ((double)(end - start))/CLOCKS_PER_SEC*1000;
-    printf("Time taken to execute in ms : %.2f\n", execution_time);
+    gettimeofday(&end, 0);
+    long seconds = (end.tv_sec - start.tv_sec);
+    long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+    printf("Time taken to execute in ms : %.2f\n", ((float) micros) / 1000);
     return 0;
 }
