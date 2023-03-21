@@ -12,11 +12,6 @@
 #include "helpers.c"
 #define SNAME "shmname"
 
-// run instructions:
-// g++ proctopk.c -o proctopk (or type make)
-// ./proctopk K outfile N ...fileNames...
-// sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
-
 int main( int argc, char* argv[]) { 
     int K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
@@ -74,9 +69,7 @@ int main( int argc, char* argv[]) {
     for (int i = 0; i < N; i++) {
         if (shmem[i].valid) { // do this if the file wasn't empty
             int noWords = shmem[i].size;
-            // printf("%d\n", noWords);
             for (int j = 0; j < noWords; j++) {
-                // printf("%d\n", shmem[i].arr[j].freq);
                 addWord(&res, shmem[i].arr[j].word, shmem[i].arr[j].freq);
             } 
         }

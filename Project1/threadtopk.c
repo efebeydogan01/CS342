@@ -9,10 +9,6 @@
 #include <sys/time.h>
 #include "helpers.c"
 
-// run instructions:
-// g++ threadtopk.c -o threadtopk (or type make)
-// ./threadtopk K outfile N ...fileNames...
-
 // global variables for threads
 char** fileNames; // array to hold the names of input files
 WordStruct *wordStruct; // holds the words and frequencies read by every thread

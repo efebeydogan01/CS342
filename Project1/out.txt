@@ -197,10 +197,6 @@ WELCOME 576
 - 556
 AT 532
 OR 520
-    gettimeofday(&end, 0);
-    long seconds = (end.tv_sec - start.tv_sec);
-    long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
-    printf("Time taken to execute in ms : %.2f\n", ((float) micros) / 1000);
 HOW 516
 IT. 516
 WILL 515
