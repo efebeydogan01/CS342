@@ -17,11 +17,7 @@
 // ./proctopk K outfile N ...fileNames...
 // sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
 
-int main( int argc, char* argv[]) {
-   struct timeval start;
-   struct timeval end;
-   gettimeofday(&start, 0);  
-
+int main( int argc, char* argv[]) { 
     int K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
     int N = atoi(argv[3]); // number of input files
@@ -116,10 +112,5 @@ int main( int argc, char* argv[]) {
         printf("Error removing %s\n",SNAME); 
         exit(-1);
     }
-
-    gettimeofday(&end, 0);
-    long seconds = (end.tv_sec - start.tv_sec);
-    long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
-    printf("Time taken to execute in ms : %.2f\n", ((float) micros) / 1000);
     return 0;
 }

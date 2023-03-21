@@ -47,10 +47,6 @@ static void* processFiles(void *param) {
 }
 
 int main( int argc, char* argv[]) {
-    struct timeval start;
-    struct timeval end;
-    gettimeofday(&start, 0);
-
     K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
     int N = atoi(argv[3]); // number of input files
@@ -130,10 +126,5 @@ int main( int argc, char* argv[]) {
     free(wordStruct);
     free(fileNames);
     freeMemory(&res);
-
-    gettimeofday(&end, 0);
-    long seconds = (end.tv_sec - start.tv_sec);
-    long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
-    printf("Time taken to execute in ms : %.2f\n", ((float) micros) / 1000);
     return 0;
 }
