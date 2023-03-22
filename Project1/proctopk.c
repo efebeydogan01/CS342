@@ -8,25 +8,17 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include<time.h>
+#include <sys/time.h>
 #include "helpers.c"
 #define SNAME "shmname"
 
-// run instructions:
-// g++ proctopk.c -o proctopk (or type make)
-// ./proctopk K outfile N ...fileNames...
-// sample valgrind code: valgrind --leak-check=full --show-leak-kinds=all ./proctopk 10 out.txt 2 in1.txt in2.txt
-
-int main( int argc, char* argv[]) {
-    clock_t start, end;
-    double execution_time;
-    start = clock();
-
+int main( int argc, char* argv[]) { 
     int K = atoi(argv[1]); // number of words to find
     char* outfile = argv[2]; // name of the output file that will store the result
     int N = atoi(argv[3]); // number of input files
     const int NUM_CHARS = 64;
     // shared memory will store the word/freq pairs
-    const int SIZE = K*N*sizeof(struct WordFreqPairs);
+    const int SIZE = N*sizeof(struct WordFreqArray);
     const int INITIAL_ARRAY_SIZE = 2;
     char fileNames[N][NUM_CHARS]; // array to hold the names of input files
     for (int i = 0; i < N; i++) {
@@ -35,10 +27,10 @@ int main( int argc, char* argv[]) {
 
     // Creating shared memory for processes
     int shm_fd; 
-    WordFreqPairs *shmem;
+    WordFreqArray *shmem;
     shm_fd = shm_open(SNAME, O_CREAT | O_RDWR, 0666);
     ftruncate(shm_fd, SIZE); // set size of shared memory
-    shmem = (WordFreqPairs *) mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shmem = (WordFreqArray *) mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (shmem == MAP_FAILED) { printf("Map failed\n"); return -1; }
 
     for (int i = 0; i < N; i++) {
@@ -54,20 +46,12 @@ int main( int argc, char* argv[]) {
             sortFreqs(&wordStruct, wordFreqPairs);
             int minimum = K < size ? K : size;
 
-            if (minimum == 0) { // if the file is empty, that block of memory is not valid
-                shmem[i*K].valid = 0;
+            if (minimum <= 0) { // if the file is empty, that block of memory is not valid
+                shmem[i].valid = 0;
             }
-
-            // copy the word and frequency pairs into the shared memory
-            for (int j = 0; j < minimum; j++) {
-                // store the number of words in the first word/freq pair
-                if (j == 0) {
-                    wordFreqPairs[j].noWords = minimum;
-                    wordFreqPairs[j].valid = 1;
-                }
-                // 0 1 2 ... K - 1 K K+1 ... 2K-1
-                shmem[j + i*K] = wordFreqPairs[j];
-                strcpy(shmem[j + i*K].word, wordFreqPairs[j].word);
+            else {
+                // copy the word and frequency pairs into the shared memory
+                createWordFreqArray(wordFreqPairs, &shmem[i], minimum);
             }
 
             freeMemory(&wordStruct);
@@ -83,11 +67,10 @@ int main( int argc, char* argv[]) {
     WordStruct res;
     createWordStruct(&res, INITIAL_ARRAY_SIZE);
     for (int i = 0; i < N; i++) {
-        if (shmem[i*K].valid) { // do this if the file wasn't empty
-            int noWords = shmem[i*K].noWords;
-
+        if (shmem[i].valid) { // do this if the file wasn't empty
+            int noWords = shmem[i].size;
             for (int j = 0; j < noWords; j++) {
-                addWord(&res, shmem[j + i*K].word, shmem[j + i*K].freq);
+                addWord(&res, shmem[i].arr[j].word, shmem[i].arr[j].freq);
             } 
         }
     }
@@ -122,9 +105,5 @@ int main( int argc, char* argv[]) {
         printf("Error removing %s\n",SNAME); 
         exit(-1);
     }
-
-    end = clock();
-    execution_time = ((double)(end - start))/CLOCKS_PER_SEC * 1000;
-    printf("Time taken to execute in ms : %.2f\n", execution_time);
     return 0;
 }
