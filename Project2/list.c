@@ -5,8 +5,8 @@
 
 typedef struct BurstItem {
     int pid;
-    int burstLenght;
-    struct timeval arrivalTime;
+    int burstLength;
+    int arrivalTime;
     int remainingTime;
     int finishTime;
     int turnaroundTime;
@@ -21,6 +21,7 @@ typedef struct node {
 typedef struct list {
     struct node *head;
     struct node *tail;
+    int size;
 } list;
 
 list* initializeList(BurstItem *item) {
@@ -30,6 +31,7 @@ list* initializeList(BurstItem *item) {
     list *lst = (list *) malloc(sizeof(list));
     lst->head = head;
     lst->tail = head;
+    lst->size = 1;
     return lst;
 }
 
@@ -42,13 +44,18 @@ void print_list(list * lst) {
     }
 }
 
-void enqueue(list * lst, BurstItem *item) {
-    node_t * tail = lst->tail;
+void enqueue(list *lst, BurstItem *item) {
+    if (!lst) {
+        lst = initializeList(item);
+    }
+    else {
+        node_t *tail = lst->tail;
 
-    tail->next = (node_t *) malloc(sizeof(node_t));
-    tail->next->item = item;
-    tail->next->next = NULL;
-    lst->tail = tail->next;
+        tail->next = (node_t *) malloc(sizeof(node_t));
+        tail->next->item = item;
+        tail->next->next = NULL;
+        lst->tail = tail->next;
+    }
 }
 
 BurstItem* dequeue(list ** lst) {

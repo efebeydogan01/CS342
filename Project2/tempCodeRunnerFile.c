@@ -1,1 +1,0 @@
-    initalizeList(head, item);
