@@ -48,4 +48,28 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
+
+    // read the input file line by line
+    FILE *fp;
+    char *line = NULL;
+    size_t len = 0;
+    size_t read;
+
+    fp = fopen(infile, "r");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
+    
+    while ((read = getline(&line, &len, fp)) != -1) {
+        // printf("Retrieved line of length %zu:\n", read);
+        // printf("%s", line);
+        char *token = strtok(line, " ");
+        if (strcmp(token, "PL") == 0) {
+            // get the burst time
+            token = strtok(NULL, " ");
+        }
+    }
+
+    fclose(fp);
+    if (line)
+        free(line);
 }
