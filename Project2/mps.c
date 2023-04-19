@@ -75,6 +75,7 @@ int main(int argc, char* argv[]) {
         if (strcmp(token, "PL") == 0) {
             // get the burst time
             token = strtok(NULL, " ");
+            printf("burst time: %s\n", token);
         }
     }
 
