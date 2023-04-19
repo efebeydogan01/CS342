@@ -18,15 +18,23 @@ typedef struct node {
     struct node *next;
 } node_t;
 
-node_t* initializeList(BurstItem *item) {
+typedef struct list {
+    struct node *head;
+    struct node *tail;
+} list;
+
+list* initializeList(BurstItem *item) {
     node_t *head = (node_t *) malloc(sizeof(node_t));
     head->item = item;
     head->next = NULL;
-    return head;
+    list *lst = (list *) malloc(sizeof(list));
+    lst->head = head;
+    lst->tail = head;
+    return lst;
 }
 
-void print_list(node_t * head) {
-    node_t * current = head;
+void print_list(list * lst) {
+    node_t * current = lst->head;
 
     while (current != NULL) {
         printf("%d\n", current->item->pid);
@@ -34,30 +42,27 @@ void print_list(node_t * head) {
     }
 }
 
-void enqueue(node_t * head, BurstItem *item) {
-    node_t * current = head;
-    while (current->next != NULL) {
-        current = current->next;
-    }
+void enqueue(list * lst, BurstItem *item) {
+    node_t * tail = lst->tail;
 
-    /* now we can add a new variable */
-    current->next = (node_t *) malloc(sizeof(node_t));
-    current->next->item = item;
-    current->next->next = NULL;
+    tail->next = (node_t *) malloc(sizeof(node_t));
+    tail->next->item = item;
+    tail->next->next = NULL;
+    lst->tail = tail->next;
 }
 
-BurstItem* dequeue(node_t ** head) {
+BurstItem* dequeue(list ** lst) {
     BurstItem *retval = NULL;
     node_t * next_node = NULL;
 
-    if (*head == NULL) {
+    if (*lst == NULL) {
         return NULL;
     }
-
-    next_node = (*head)->next;
-    retval = (*head)->item;
-    free(*head);
-    *head = next_node;
+    node_t *head = (*lst)->head;
+    next_node = head->next;
+    retval = head->item;
+    free(head);
+    (*lst)->head = next_node;
 
     return retval;
 }

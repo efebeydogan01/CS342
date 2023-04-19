@@ -24,16 +24,25 @@ int main(int argc, char* argv[]) {
     int outmode = 1;
     char *outfile = "out.txt";
 
+    // BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
+    // item->pid = 31;
+    // list *lst = initializeList(item);
+    // enqueue(lst, item);
+    // dequeue(&lst);
+    // dequeue(&lst);
+    // dequeue(&lst);
+    // print_list(lst);
+
     int multiFlag = strcmp(SAP, "M") ? 1 : 0; // true if multiqueue approach is used
 
     // variables for single queue approach
-    node_t *queue = NULL;
+    list *queue = NULL;
     pthread_mutex_t lock;
     // arrays to hold the queues and locks for the multiqueue approach
-    node_t **queues;
+    list **queues;
     pthread_mutex_t *locks;
     if (multiFlag) {
-        queues = (node_t **) malloc(sizeof(node_t *) * N);
+        queues = (list **) malloc(sizeof(list *) * N);
         for (int i = 0; i < N; i++) {
             queues[i] = NULL;
         }
