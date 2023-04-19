@@ -6,13 +6,16 @@
 #include <sys/wait.h>
 #include "list.c"
 
-static void* schedule(void *param) {
+struct timeval start_time;
+list **queues;
+pthread_mutex_t *lock;
+pthread_t *pid;
 
+static void* schedule(void *param) {
 }
 
 int main(int argc, char* argv[]) {
     // get the start time of the program
-    struct timeval start_time;
     gettimeofday(&start_time, NULL);
 
     int N = 2;
@@ -33,25 +36,19 @@ int main(int argc, char* argv[]) {
     // dequeue(&lst);
     // print_list(lst);
 
-    int multiFlag = strcmp(SAP, "M") ? 1 : 0; // true if multiqueue approach is used
+    int multiFlag = strcmp(SAP, "M") ? 0 : 1; // true if multiqueue approach is used
+    int queueCount = multiFlag ? N : 1;
+    queues = (list **) malloc(sizeof(list*) * queueCount);
+    lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t*) * queueCount);
+    pid = (pthread_t *) malloc(sizeof(pthread_t*) * N);
 
-    // variables for single queue approach
-    list *queue = NULL;
-    pthread_mutex_t lock;
-    // arrays to hold the queues and locks for the multiqueue approach
-    list **queues;
-    pthread_mutex_t *locks;
-    if (multiFlag) {
-        queues = (list **) malloc(sizeof(list *) * N);
-        for (int i = 0; i < N; i++) {
-            queues[i] = NULL;
-        }
-        locks = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * N);
+    for (int i = 0; i < queueCount; i++) {
+        queues[i] = NULL;
     }
 
-    pthread_t pid[N];
-    for (int i = 0; i < N; i++) { // create N threads to simulate N processors
-        int err = pthread_create(&pid[i], NULL, schedule, NULL);
+    // create N threads to simulate N processors
+    for (int i = 0; i < N; i++) {
+        int err = pthread_create(&pid[i], NULL, schedule, i);
         if (err) {
             printf("error occured: %d\n",  err);
             exit(1);
