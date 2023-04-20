@@ -47,17 +47,26 @@ void selectQueue(BurstItem *item) {
         int minLoad = INT_MAX;
         int qid = -1;
 
+        // get all locks
+        for (int i = 0; i < parameters.N; i++) {
+            pthread_mutex_lock(&lock[i]);
+        }
+
+        // find the queue with the least load
         for (int i = 0; i < parameters.N; i++) {
             int load = queues[i]->size;
-            if (queues[i] && queues[i]->size < minLoad) {
+            if (queues[i]->size < minLoad) {
                 minLoad = queues[i]->size;
                 qid = i;
             }
         } 
 
-        pthread_mutex_lock(&lock[qid]);
         enqueue(queues[qid], item);
-        pthread_mutex_unlock(&lock[qid]);
+
+        // release all locks
+        for (int i = 0; i < parameters.N; i++) {
+            pthread_mutex_lock(&lock[i]);
+        }
     }
 }
 
@@ -65,7 +74,7 @@ int main(int argc, char* argv[]) {
     // get the start time of the program
     gettimeofday(&parameters.start_time, NULL);
 
-    parameters = {
+    parameters = (Parameters) {
         .N = 2,
         .SAP = "M",
         .QS = "RM",
@@ -96,7 +105,7 @@ int main(int argc, char* argv[]) {
     }
 
     // create N threads to simulate N processors
-    for (long i = 0; i < N; i++) {
+    for (long i = 0; i < parameters.N; i++) {
         int err = pthread_create(&pid[i], NULL, schedule, (void *) i);
         if (err) {
             printf("error occured: %d\n",  err);
