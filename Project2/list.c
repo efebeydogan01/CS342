@@ -136,3 +136,17 @@ BurstItem* dequeueShortest(list *lst) {
     free(dq);
     return retval;
 }
+
+void sortAndPrint(list *finishedBursts) {
+    BurstItem **bursts = (BurstItem **) malloc(sizeof(BurstItem *) * finishedBursts->size);
+    node_t *cur = finishedBursts->head;
+    int i = 0;
+    while (cur) {
+        bursts[i] = cur->item;
+        i++;
+        cur = cur->next;
+    }
+
+    
+
+}
