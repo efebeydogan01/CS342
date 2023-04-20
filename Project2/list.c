@@ -65,9 +65,8 @@ BurstItem* createDummyItem() {
 }
 
 void enqueue(list *lst, BurstItem *item) {
-    if (!lst)
-        lst = createList();
-    
+    if (!lst) return;
+
     if (!lst->head) {
         node_t *head = (node_t *) malloc(sizeof(node_t));
         head->item = item;
@@ -105,7 +104,7 @@ BurstItem* dequeue(list *lst) {
     lst->head = next_node;
     lst->size--;
     free(head);
-
+    printf("%d", retval->pid);
     return retval;
 }
 
@@ -157,4 +156,5 @@ BurstItem** sort(list *finishedBursts) {
     }
 
     qsort(bursts, finishedBursts->size, sizeof(BurstItem *), sortHelper);
+    return bursts;
 }

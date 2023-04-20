@@ -75,12 +75,12 @@ static void* schedule(void *param) {
             int burstDuration = burstItem->remainingTime;
             if (parameters.ALG == RR && parameters.Q < burstDuration)
                 burstDuration = parameters.Q;
-            if (parameters.outmode == 2) {
+
+            if (parameters.outmode == 2)
                 printf("time=%d, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
-            }
-            if (parameters.outmode == 3) {
+            else if (parameters.outmode == 3) 
                 printf("Burst with id %d is selected to run in CPU with id %d\n", burstItem->pid, pid);
-            }
+
             usleep(burstDuration * 1000);
 
             burstItem->remainingTime -= burstDuration;
@@ -89,23 +89,23 @@ static void* schedule(void *param) {
             if (parameters.ALG == RR && burstItem->remainingTime > 0) {
                 if (parameters.outmode == 3) 
                     printf("Burst with id %d is added to the end of the queue after time sliced expired (round-robin scheduling, remaining time: %d)\n", burstItem->pid, burstItem->remainingTime);
+                
                 pthread_mutex_lock(&lock[qid]);
                 enqueue(queues[qid], burstItem);
                 pthread_mutex_unlock(&lock[qid]);
-                if (parameters.outmode == 3) {
-                    printf("Burst with id %d is added to the end of the queue (round-robin scheduling)\n", burstItem->pid);
-                }    
+
+                if (parameters.outmode == 3)
+                    printf("Burst with id %d is added to the end of the queue (round-robin scheduling)\n", burstItem->pid);  
             }
             // compute times and add item to finished bursts
             else if (burstItem->remainingTime == 0) {
                 burstItem->finishTime = getTimestamp();
                 burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
                 burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
-                if (parameters.outmode == 3) {
+
+                if (parameters.outmode == 3)
                     printf("Burst with id %d has finished its burst. (finish time: %d, turnaround time: %d, waiting time: %d)\n", burstItem->pid, burstItem->finishTime, 
                         burstItem->turnaroundTime, burstItem->waitingTime);
-                }
-                // to do : add to finished list
 
                 pthread_mutex_lock(&finishedLock);
                 enqueue(finishedBursts, burstItem);
@@ -123,6 +123,7 @@ void selectQueue(BurstItem *item) {
         item->processorID = 0;
         enqueue(queues[0], item);
         pthread_mutex_unlock(&lock[0]);
+
         if (parameters.outmode == 3)
             printf("Burst with id %d and burst length %d is added to the end of the common queue (single-queue approach)\n", item->pid, item->burstLength);
     }
@@ -133,9 +134,9 @@ void selectQueue(BurstItem *item) {
         item->processorID = qid;
         enqueue(queues[qid], item);
         pthread_mutex_unlock(&lock[qid]);
-        if (parameters.outmode == 3) {
-            printf("Burst with id %d and burst length %d is added to the queue of the processor wth id %d (multiqueue with round robin)\n", item->pid, item->burstLength, qid);
-        }
+
+        if (parameters.outmode == 3)
+            printf("Burst with id %d and burst length %d is added to the queue of the processor with id %d (multiqueue with round robin)\n", item->pid, item->burstLength, qid);
     }
     // multi queue - load balancing method
     else {
@@ -163,9 +164,10 @@ void selectQueue(BurstItem *item) {
         for (int i = 0; i < parameters.N; i++) {
             pthread_mutex_unlock(&lock[i]);
         }
-        if (parameters.outmode == 3) {
-            printf("Burst with id %d and burst length %d is added to the queue of the processor wth id %d (multiqueue with load balancing)\n", item->pid, item->burstLength, qid);
-        }
+
+        if (parameters.outmode == 3) 
+            printf("Burst with id %d and burst length %d is added to the queue of the processor with id %d (multiqueue with load balancing)\n", item->pid, item->burstLength, qid);
+        
     }
 }
 
@@ -201,15 +203,15 @@ void printBursts(BurstItem **bursts, int size) {
     int tt_sum = 0;
 
     // print the table
-    printf("%-6s%-6s%-12s%-12s%-12s%-12s%-12s", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
+    printf("%-6s%-6s%-8s%-8s%-8s%-8s%-8s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
     for (int i = 0; i < size; i++) {
         item = bursts[i];
         tt_sum += item->turnaroundTime;
-        printf("%-6d%-6d%-12d%-12d%-12d%-12d%-12d", 
+        printf("%-6d%-6d%-8d%-8d%-8d%-8d%-8d\n", 
             item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
     }
 
-    printf("average turnaround time: %d", tt_sum / size);
+    printf("average turnaround time: %d\n", tt_sum / size);
 }
 
 int main(int argc, char* argv[]) {
@@ -223,7 +225,7 @@ int main(int argc, char* argv[]) {
         .ALG = 0,
         .Q = 20,
         .infile = "in.txt",
-        .outmode = 1,
+        .outmode = 3,//1,
         .outfile = "out.txt"
     };
 
@@ -243,7 +245,7 @@ int main(int argc, char* argv[]) {
     pthread_t pid[parameters.N];
 
     for (int i = 0; i < queueCount; i++) {
-        queues[i] = NULL;
+        queues[i] = createList();
     }
 
     // create N threads to simulate N processors
