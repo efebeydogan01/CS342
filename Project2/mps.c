@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <limits.h>
+#include <unistd.h>
 #include "list.c"
 #define M 0
 #define S 1
@@ -30,8 +31,6 @@ typedef struct Parameters {
 Parameters parameters;
 list **queues;
 pthread_mutex_t *lock;
-const int dummyID = -31;
-
 
 static void* schedule(void *param) {
     int pid = (long) param;
@@ -43,21 +42,27 @@ static void* schedule(void *param) {
         pthread_mutex_lock(&lock[qid]);
         // SJF
         if (parameters.ALG == SJF) {
-            burstItem = dequeueShortest(&queues[qid]);
+            burstItem = dequeueShortest(queues[qid]);
         }
         // RR or FCFS
         else {
-            burstItem = dequeue(&queues[qid]);
+            burstItem = dequeue(queues[qid]);
         }
         pthread_mutex_unlock(&lock[qid]);
 
-        if (!burstItem)
+        if (!burstItem) {
             usleep(1000);
+        }
+        // retrieved the dummy item
+        else if (isDummy(burstItem)) {
+            // TO DO
+            pthread_exit(NULL);
+        }
         // compute the burst duration to sleep
         else {
             int burstDuration = burstItem->remainingTime;
-            if (parameters.ALG == RR)
-                burstDuration = min(burstDuration, parameters.Q);
+            if (parameters.ALG == RR && parameters.Q < burstDuration)
+                burstDuration = parameters.Q;
             usleep(burstDuration * 1000);
         }
 
@@ -111,11 +116,11 @@ void selectQueue(BurstItem *item) {
 
 void addDummyItem() {
     // single queue
-    if (strcmp(parameters.SAP, "S" == 0)) {
+    if (parameters.SAP == S) {
         pthread_mutex_lock(&lock[0]);
         BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
         // dummy item
-        item->pid = dummyID;
+        item->pid = DUMMY_ID;
         enqueue(queues[0], item);
         pthread_mutex_unlock(&lock[0]);
     }
@@ -127,7 +132,7 @@ void addDummyItem() {
         
         for (int i = 0; i < parameters.N; i++) {
             BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
-            item->pid = dummyID;
+            item->pid = DUMMY_ID;
             enqueue(queues[i], item);
         } 
 
