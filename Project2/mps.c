@@ -172,6 +172,22 @@ void addDummyItem() {
     }
 }
 
+void printBursts(BurstItem **bursts, int size) {
+    BurstItem *item;
+    int tt_sum = 0;
+
+    // print the table
+    printf("%-6s%-6s%-12s%-12s%-12s%-12s%-12s", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
+    for (int i = 0; i < size; i++) {
+        item = bursts[i];
+        tt_sum += item->turnaroundTime;
+        printf("%-6d%-6d%-12d%-12d%-12d%-12d%-12d", 
+            item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
+    }
+
+    printf("average turnaround time: %d", tt_sum / size);
+}
+
 int main(int argc, char* argv[]) {
     // get the start time of the program
     gettimeofday(&parameters.start_time, NULL);
@@ -266,5 +282,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    sortAndPrint(finishedBursts);
+    BurstItem** sortedBursts = sort(finishedBursts);
+    printBursts(sortedBursts, finishedBursts->size);
 }

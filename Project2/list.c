@@ -146,7 +146,7 @@ int sortHelper(const void *a, const void *b) {
     return 1;
 }
 
-void sortAndPrint(list *finishedBursts) {
+BurstItem** sort(list *finishedBursts) {
     BurstItem **bursts = (BurstItem **) malloc(sizeof(BurstItem *) * finishedBursts->size);
     node_t *cur = finishedBursts->head;
     int i = 0;
