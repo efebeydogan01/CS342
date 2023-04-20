@@ -56,6 +56,12 @@ int isDummy(BurstItem *item) {
     return 0;
 }
 
+BurstItem* createDummyItem() {
+    BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
+    item->pid = DUMMY_ID;
+    return item;
+}
+
 void enqueue(list *lst, BurstItem *item) {
     if (!lst)
         lst = createList();
@@ -71,7 +77,13 @@ void enqueue(list *lst, BurstItem *item) {
         node_t *tail = lst->tail;
 
         tail->next = (node_t *) malloc(sizeof(node_t));
-        tail->next->item = item;
+        if (isDummy(tail->item)) {
+            tail->item = item;
+            tail->next->item = createDummyItem();
+        }
+        else {
+            tail->next->item = item;
+        }
         tail->next->next = NULL;
         lst->tail = tail->next;
     }

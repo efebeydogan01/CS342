@@ -48,15 +48,19 @@ static void* schedule(void *param) {
         else {
             burstItem = dequeue(queues[qid]);
         }
+
+        if (isDummy(burstItem)) {
+            // readd the dummy item for other threads to terminate
+            if (parameters.SAP == S && parameters.N > 1) {
+                enqueue(queues[qid], burstItem);
+            }
+            pthread_exit(NULL);
+        }
+
         pthread_mutex_unlock(&lock[qid]);
 
         if (!burstItem) {
             usleep(1000);
-        }
-        // retrieved the dummy item
-        else if (isDummy(burstItem)) {
-            // TO DO
-            pthread_exit(NULL);
         }
         // compute the burst duration to sleep
         else {
@@ -64,6 +68,15 @@ static void* schedule(void *param) {
             if (parameters.ALG == RR && parameters.Q < burstDuration)
                 burstDuration = parameters.Q;
             usleep(burstDuration * 1000);
+
+            burstItem->remainingTime -= burstDuration;
+
+            // re-enqueue for RR
+            if (parameters.ALG == RR && burstItem->remainingTime > 0) {
+                pthread_mutex_lock(&lock[qid]);
+                enqueue(queues[qid], burstItem);
+                pthread_mutex_unlock(&lock[qid]);    
+            }
         }
 
     }
@@ -131,9 +144,7 @@ void addDummyItem() {
         }
         
         for (int i = 0; i < parameters.N; i++) {
-            BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
-            item->pid = DUMMY_ID;
-            enqueue(queues[i], item);
+            enqueue(queues[i], createDummyItem());
         } 
 
         // release all locks
