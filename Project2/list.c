@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <ctype.h>
 #define DUMMY_ID -31
 
 typedef struct BurstItem {
@@ -137,6 +138,13 @@ BurstItem* dequeueShortest(list *lst) {
     return retval;
 }
 
+int sortHelper(const void *a, const void *b) {
+    if ( ((const struct BurstItem *) a)->pid < ((const BurstItem *) b)->pid) {
+        return 0;
+    }
+    return 1;
+}
+
 void sortAndPrint(list *finishedBursts) {
     BurstItem **bursts = (BurstItem **) malloc(sizeof(BurstItem *) * finishedBursts->size);
     node_t *cur = finishedBursts->head;
@@ -147,6 +155,5 @@ void sortAndPrint(list *finishedBursts) {
         cur = cur->next;
     }
 
-    
-
+    qsort(bursts, finishedBursts->size, sizeof(BurstItem *), sortHelper);
 }
