@@ -148,6 +148,12 @@ int main(int argc, char* argv[]) {
             burstItem->processorID = -1;
 
             id++;
+            selectQueue(burstItem);
+        }
+        else if (strcmp(token, "IAT") == 0) {
+            token = strtok(NULL, " \n");
+            int sleepTime = atoi(token) * 1000;
+            usleep(sleepTime);
         }
     }
 
