@@ -24,14 +24,11 @@ typedef struct list {
     int size;
 } list;
 
-list* initializeList(BurstItem *item) {
-    node_t *head = (node_t *) malloc(sizeof(node_t));
-    head->item = item;
-    head->next = NULL;
+list* createList() {
     list *lst = (list *) malloc(sizeof(list));
-    lst->head = head;
-    lst->tail = head;
-    lst->size = 1;
+    lst->head = NULL;
+    lst->tail = NULL;
+    lst->size = 0;
     return lst;
 }
 
@@ -46,7 +43,12 @@ void print_list(list * lst) {
 
 void enqueue(list *lst, BurstItem *item) {
     if (!lst) {
-        lst = initializeList(item);
+        node_t *head = (node_t *) malloc(sizeof(node_t));
+        head->item = item;
+        head->next = NULL;
+        lst->head = head;
+        lst->tail = head;
+        lst->size = 1;
     }
     else {
         node_t *tail = lst->tail;
