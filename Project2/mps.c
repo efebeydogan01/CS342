@@ -85,12 +85,15 @@ static void* schedule(void *param) {
                 enqueue(queues[qid], burstItem);
                 pthread_mutex_unlock(&lock[qid]);    
             }
+            // compute times and add item to finished bursts
             else if (burstItem->remainingTime == 0) {
                 burstItem->finishTime = getTimestamp();
                 burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
                 burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
 
-                // to do : add to finished list
+                pthread_mutex_lock(&finishedLock);
+                enqueue(finishedBursts, burstItem);
+                pthread_mutex_unlock(&finishedLock);
             }
         }
 
