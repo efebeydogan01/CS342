@@ -6,12 +6,20 @@
 #include <sys/wait.h>
 #include <limits.h>
 #include "list.c"
+#define M 0
+#define S 1
+#define RM 0
+#define LM 1
+#define NA -1
+#define RR 0
+#define FCFS 1
+#define SJF 2
 
 typedef struct Parameters {
     int N;
-    char *SAP;
-    char *QS;
-    char *ALG;
+    int SAP;  // M:0, S:1
+    int QS;   // RM:0, LM:1, NA:-1 
+    int ALG;  // RR:0, FCFS:1, SJF:2
     int Q;
     char *infile;
     int outmode;
@@ -25,19 +33,46 @@ pthread_mutex_t *lock;
 
 
 static void* schedule(void *param) {
-    printf("%lu\n", (long) param);
+    int pid = (long) param;
+    BurstItem *burstItem;
+
+    while (1) {
+        int qid = (parameters.SAP == M) ? pid : 0;
+
+        pthread_mutex_lock(&lock[qid]);
+        // SJF
+        if (parameters.ALG == SJF) {
+            burstItem = dequeueShortest(&queues[qid]);
+        }
+        // RR or FCFS
+        else {
+            burstItem = dequeue(&queues[qid]);
+        }
+        pthread_mutex_unlock(&lock[qid]);
+
+        if (!burstItem)
+            usleep(1000);
+        // compute the burst duration to sleep
+        else {
+            int burstDuration = burstItem->remainingTime;
+            if (parameters.ALG == RR)
+                burstDuration = min(burstDuration, parameters.Q);
+            usleep(burstDuration * 1000);
+        }
+
+    }
 }
 
 void selectQueue(BurstItem *item) {
     // single queue
-    if (strcmp(parameters.SAP, "S" == 0)) {
+    if (parameters.SAP == S) {
         pthread_mutex_lock(&lock[0]);
         item->processorID = 0;
         enqueue(queues[0], item);
         pthread_mutex_unlock(&lock[0]);
     }
     // multi queue - round robin method
-    else if (strcmp(parameters.QS, "RM" == 0)) {
+    else if (parameters.QS == RM) {
         int qid = (item->pid - 1) % parameters.N;
         pthread_mutex_lock(&lock[qid]);
         item->processorID = qid;
@@ -79,9 +114,9 @@ int main(int argc, char* argv[]) {
 
     parameters = (Parameters) {
         .N = 2,
-        .SAP = "M",
-        .QS = "RM",
-        .ALG = "RR",
+        .SAP = 0,
+        .QS = 0,
+        .ALG = 0,
         .Q = 20,
         .infile = "in.txt",
         .outmode = 1,
@@ -97,8 +132,7 @@ int main(int argc, char* argv[]) {
     // dequeue(&lst);
     // print_list(lst);
 
-    int multiFlag = strcmp(parameters.SAP, "M") ? 0 : 1; // true if multiqueue approach is used
-    int queueCount = multiFlag ? parameters.N : 1;
+    int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
     pthread_t pid[parameters.N];
