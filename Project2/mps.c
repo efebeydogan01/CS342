@@ -32,6 +32,7 @@ void selectQueue(BurstItem *item) {
     // single queue
     if (strcmp(parameters.SAP, "S" == 0)) {
         pthread_mutex_lock(&lock[0]);
+        item->processorID = 0;
         enqueue(queues[0], item);
         pthread_mutex_unlock(&lock[0]);
     }
@@ -39,6 +40,7 @@ void selectQueue(BurstItem *item) {
     else if (strcmp(parameters.QS, "RM" == 0)) {
         int qid = (item->pid - 1) % parameters.N;
         pthread_mutex_lock(&lock[qid]);
+        item->processorID = qid;
         enqueue(queues[qid], item);
         pthread_mutex_unlock(&lock[qid]);
     }
@@ -61,6 +63,7 @@ void selectQueue(BurstItem *item) {
             }
         } 
 
+        item->processorID = qid;
         enqueue(queues[qid], item);
 
         // release all locks
