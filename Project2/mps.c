@@ -96,6 +96,7 @@ static void* schedule(void *param) {
                     printf("Burst with id %d is added to the end of the queue (round-robin scheduling)\n", burstItem->pid);
                 }    
             }
+            // compute times and add item to finished bursts
             else if (burstItem->remainingTime == 0) {
                 burstItem->finishTime = getTimestamp();
                 burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
@@ -105,6 +106,10 @@ static void* schedule(void *param) {
                         burstItem->turnaroundTime, burstItem->waitingTime);
                 }
                 // to do : add to finished list
+
+                pthread_mutex_lock(&finishedLock);
+                enqueue(finishedBursts, burstItem);
+                pthread_mutex_unlock(&finishedLock);
             }
         }
 
