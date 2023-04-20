@@ -220,6 +220,10 @@ int main(int argc, char* argv[]) {
             usleep(sleepTime);
         }
     }
+    fclose(fp);
+    if (line)
+        free(line);
+        
     // add dummy items to the end of every queue
     addDummyItem();
 
@@ -230,8 +234,4 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
-
-    fclose(fp);
-    if (line)
-        free(line);
 }
