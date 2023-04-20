@@ -76,3 +76,33 @@ BurstItem* dequeue(list ** lst) {
     return retval;
 }
 
+BurstItem* dequeueShortest(list **lst) {
+    node_t *cur = (*lst)->head;
+    node_t *dq = cur;
+    node_t *dq_prev = NULL;
+    node_t *cur_prev = NULL;
+    int curTime = cur->item->burstLength;
+
+    while (cur) {
+        // encountered dummy item
+        if (cur->item->pid == -31) {
+            cur = cur->next;
+            continue;
+        } 
+
+        if (cur->item->burstLength < curTime) {
+            dq_prev = cur_prev;
+            dq = cur;
+        }
+        cur_prev = cur;
+        cur = cur->next;
+    }
+
+    if (!dq_prev) {
+        return dequeue(lst);
+    }
+    dq_prev->next = dq->next;
+    BurstItem *retval = dq->item;
+    free(dq);
+    return retval;
+}
