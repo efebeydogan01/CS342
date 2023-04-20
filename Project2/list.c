@@ -11,6 +11,7 @@ typedef struct BurstItem {
     int remainingTime;
     int finishTime;
     int turnaroundTime;
+    int waitingTime;
     int processorID;
 } BurstItem;
 
