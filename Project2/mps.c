@@ -34,6 +34,12 @@ pthread_mutex_t *lock;
 list *finishedBursts;
 pthread_mutex_t finishedLock;
 
+int getTimestamp() {
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
+    return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000;
+}
+
 static void* schedule(void *param) {
     int pid = (long) param;
     BurstItem *burstItem;
@@ -78,6 +84,13 @@ static void* schedule(void *param) {
                 pthread_mutex_lock(&lock[qid]);
                 enqueue(queues[qid], burstItem);
                 pthread_mutex_unlock(&lock[qid]);    
+            }
+            else if (burstItem->remainingTime == 0) {
+                burstItem->finishTime = getTimestamp();
+                burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
+                burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
+
+                // to do : add to finished list
             }
         }
 
@@ -219,15 +232,11 @@ int main(int argc, char* argv[]) {
             BurstItem *burstItem = (BurstItem *) malloc(sizeof(BurstItem));
             burstItem->pid = id;
             burstItem->burstLength = atoi(token);
-
-            struct timeval current_time;
-            gettimeofday(&current_time, NULL);
-            burstItem->arrivalTime = (current_time.tv_usec - parameters.start_time.tv_usec) / 1000;
-
+            burstItem->arrivalTime = getTimestamp();
             burstItem->remainingTime = atoi(token);
-
             burstItem->finishTime = -1;
             burstItem->turnaroundTime = -1;
+            burstItem->waitingTime = -1;
             burstItem->processorID = -1;
 
             id++;
