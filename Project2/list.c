@@ -41,6 +41,13 @@ void print_list(list * lst) {
     }
 }
 
+int isEmpty(list *lst) {
+    if (lst->size == 0 || (lst->size == 1 && lst->head->item->pid == -31)) {
+        return 1;
+    }
+    return 0;
+}
+
 void enqueue(list *lst, BurstItem *item) {
     if (!lst) {
         node_t *head = (node_t *) malloc(sizeof(node_t));
@@ -64,7 +71,7 @@ BurstItem* dequeue(list ** lst) {
     BurstItem *retval = NULL;
     node_t * next_node = NULL;
 
-    if (*lst == NULL) {
+    if (isEmpty(*lst)) {
         return NULL;
     }
     node_t *head = (*lst)->head;
@@ -77,6 +84,9 @@ BurstItem* dequeue(list ** lst) {
 }
 
 BurstItem* dequeueShortest(list **lst) {
+    if (isEmpty(*lst)) {
+        return NULL;
+    }
     node_t *cur = (*lst)->head;
     node_t *dq = cur;
     node_t *dq_prev = NULL;
