@@ -30,6 +30,7 @@ typedef struct Parameters {
 Parameters parameters;
 list **queues;
 pthread_mutex_t *lock;
+const int dummyID = -31;
 
 
 static void* schedule(void *param) {
@@ -103,7 +104,36 @@ void selectQueue(BurstItem *item) {
 
         // release all locks
         for (int i = 0; i < parameters.N; i++) {
+            pthread_mutex_unlock(&lock[i]);
+        }
+    }
+}
+
+void addDummyItem() {
+    // single queue
+    if (strcmp(parameters.SAP, "S" == 0)) {
+        pthread_mutex_lock(&lock[0]);
+        BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
+        // dummy item
+        item->pid = dummyID;
+        enqueue(queues[0], item);
+        pthread_mutex_unlock(&lock[0]);
+    }
+    else {
+        // get all locks
+        for (int i = 0; i < parameters.N; i++) {
             pthread_mutex_lock(&lock[i]);
+        }
+        
+        for (int i = 0; i < parameters.N; i++) {
+            BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
+            item->pid = dummyID;
+            enqueue(queues[i], item);
+        } 
+
+        // release all locks
+        for (int i = 0; i < parameters.N; i++) {
+            pthread_mutex_unlock(&lock[i]);
         }
     }
 }
@@ -188,6 +218,16 @@ int main(int argc, char* argv[]) {
             token = strtok(NULL, " \n");
             int sleepTime = atoi(token) * 1000;
             usleep(sleepTime);
+        }
+    }
+    // add dummy items to the end of every queue
+    addDummyItem();
+
+    // wait for threads to terminate
+    for (int i = 0; i < parameters.N; i++) {
+        if ( pthread_join( pid[i], NULL)) {
+            printf("Error joining threads!");
+            exit(1);
         }
     }
 

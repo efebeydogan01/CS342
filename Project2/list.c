@@ -41,6 +41,13 @@ void print_list(list * lst) {
     }
 }
 
+int isEmpty(list *lst) {
+    if (lst->size == 0 || (lst->size == 1 && lst->head->item->pid == -31)) {
+        return 1;
+    }
+    return 0;
+}
+
 void enqueue(list *lst, BurstItem *item) {
     if (!lst) {
         node_t *head = (node_t *) malloc(sizeof(node_t));
@@ -64,7 +71,7 @@ BurstItem* dequeue(list ** lst) {
     BurstItem *retval = NULL;
     node_t * next_node = NULL;
 
-    if (*lst == NULL) {
+    if (isEmpty(*lst)) {
         return NULL;
     }
     node_t *head = (*lst)->head;
@@ -76,3 +83,36 @@ BurstItem* dequeue(list ** lst) {
     return retval;
 }
 
+BurstItem* dequeueShortest(list **lst) {
+    if (isEmpty(*lst)) {
+        return NULL;
+    }
+    node_t *cur = (*lst)->head;
+    node_t *dq = cur;
+    node_t *dq_prev = NULL;
+    node_t *cur_prev = NULL;
+    int curTime = cur->item->burstLength;
+
+    while (cur) {
+        // encountered dummy item
+        if (cur->item->pid == -31) {
+            cur = cur->next;
+            continue;
+        } 
+
+        if (cur->item->burstLength < curTime) {
+            dq_prev = cur_prev;
+            dq = cur;
+        }
+        cur_prev = cur;
+        cur = cur->next;
+    }
+
+    if (!dq_prev) {
+        return dequeue(lst);
+    }
+    dq_prev->next = dq->next;
+    BurstItem *retval = dq->item;
+    free(dq);
+    return retval;
+}
