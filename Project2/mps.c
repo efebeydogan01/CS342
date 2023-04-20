@@ -31,6 +31,8 @@ typedef struct Parameters {
 Parameters parameters;
 list **queues;
 pthread_mutex_t *lock;
+list *finishedBursts;
+pthread_mutex_t finishedLock;
 
 int getTimestamp() {
     struct timeval current_time;
@@ -194,6 +196,7 @@ int main(int argc, char* argv[]) {
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
+    finishedBursts = (list *) malloc(sizeof(list));
     pthread_t pid[parameters.N];
 
     for (int i = 0; i < queueCount; i++) {
@@ -248,7 +251,7 @@ int main(int argc, char* argv[]) {
     fclose(fp);
     if (line)
         free(line);
-        
+
     // add dummy items to the end of every queue
     addDummyItem();
 
@@ -259,4 +262,6 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
+
+    sortAndPrint(finishedBursts);
 }
