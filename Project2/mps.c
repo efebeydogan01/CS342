@@ -26,6 +26,7 @@ typedef struct Parameters {
     int random;
     int T, T1, T2, L, L1, L2, PC;
     char *infile;
+    char inFlag;
     int outmode;
     char *outfile;
     int outFlag;
@@ -350,6 +351,7 @@ void readParameters(int argc, char* argv[]) {
         }
         else if (strcmp(cur, "-i") == 0) {
             i++;
+            parameters.inFlag = 1;
             parameters.infile = argv[i];
         }
         else if (strcmp(cur, "-m") == 0) {
@@ -381,6 +383,8 @@ void readParameters(int argc, char* argv[]) {
     }
 
     // condition for when neither i nor r is supplied
+    if (parameters.random == 0 && parameters.inFlag == 0)
+        parameters.random = 1;
 }
 
 int main(int argc, char* argv[]) {
@@ -396,7 +400,8 @@ int main(int argc, char* argv[]) {
         .Q = 20,
         .random = 0,
         .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
-        .infile = "in.txt",
+        .infile = "",
+        .inFlag = 0,
         .outmode = 1,//1,
         .outfile = "",
         .start_time = start_time,
@@ -456,6 +461,8 @@ int main(int argc, char* argv[]) {
                 fprintf(optr, "Bursts and interarrival times will be created randomly with parameters:\n");
                 fprintf(optr, "T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
             }
+            else
+                fprintf(optr, "Bursts and interarrival times will be read from an input file with name: %s\n", parameters.infile);
             pthread_mutex_unlock(&outfileLock);
         }
         else {
@@ -478,6 +485,8 @@ int main(int argc, char* argv[]) {
                 printf("Bursts and interarrival times will be created randomly with parameters:\n");
                 printf("T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
             }
+            else
+                printf("Bursts and interarrival times will be read from an input file with name: %s\n", parameters.infile);
         }
     }
 
@@ -499,22 +508,21 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
-
-    // read the input file line by line
-    FILE *fp;
-    char *line = NULL;
-    size_t len = 0;
-    size_t read;
-
-    fp = fopen(parameters.infile, "r");
-    if (fp == NULL) {
-        printf("Input file not found.\n");
-        exit(EXIT_FAILURE);
-    }
     
     int id = 1;
 
     if (parameters.random == 0) {
+        // read the input file line by line
+        FILE *fp;
+        char *line = NULL;
+        size_t len = 0;
+        size_t read;
+
+        fp = fopen(parameters.infile, "r");
+        if (fp == NULL) {
+            printf("Input file not found.\n");
+            exit(EXIT_FAILURE);
+        }
         // read from file
         while ((read = getline(&line, &len, fp)) != -1) {
             char *token = strtok(line, " ");
@@ -579,5 +587,6 @@ int main(int argc, char* argv[]) {
     freeList(finishedBursts);
 
     // close output file
-    fclose(optr);
+    if (parameters.outFlag) 
+        fclose(optr);
 }
