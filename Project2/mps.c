@@ -223,7 +223,8 @@ void printBursts(BurstItem **bursts, int size) {
 
 int main(int argc, char* argv[]) {
     // get the start time of the program
-    gettimeofday(&parameters.start_time, NULL);
+    struct timeval start_time;
+    gettimeofday(&start_time, NULL);
 
     parameters = (Parameters) {
         .N = 2,
@@ -233,7 +234,8 @@ int main(int argc, char* argv[]) {
         .Q = 20,
         .infile = "in.txt",
         .outmode = 3,//1,
-        .outfile = "out.txt"
+        .outfile = "out.txt",
+        .start_time = start_time
     };
 
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
