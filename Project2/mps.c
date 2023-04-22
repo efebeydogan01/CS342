@@ -28,6 +28,7 @@ typedef struct Parameters {
     char *infile;
     int outmode;
     char *outfile;
+    int outFlag;
     struct timeval start_time;
 } Parameters;
 
@@ -36,6 +37,8 @@ list **queues;
 pthread_mutex_t *lock;
 list *finishedBursts;
 pthread_mutex_t finishedLock;
+pthread_mutex_t outfileLock;
+FILE *optr;
 
 long getTimestamp() {
     struct timeval current_time;
@@ -71,8 +74,16 @@ static void* schedule(void *param) {
             else {
                 free(burstItem);
             }
-            if (parameters.outmode == 3)
-                printf("t=%-5ld\tcpu=%-2d finished working\n", getTimestamp(), pid);
+            if (parameters.outmode == 3) {
+                if (parameters.outFlag) {
+                    pthread_mutex_lock(&outfileLock);
+                    fprintf(optr, "t=%-5ld\tcpu=%-2d finished working\n", getTimestamp(), pid);
+                    pthread_mutex_unlock(&outfileLock);
+                }
+                else {
+                    printf("t=%-5ld\tcpu=%-2d finished working\n", getTimestamp(), pid);
+                }
+            }
             pthread_exit(NULL);
         }
 
@@ -87,10 +98,24 @@ static void* schedule(void *param) {
             if (parameters.ALG == RR && parameters.Q < burstDuration)
                 burstDuration = parameters.Q;
 
-            if (parameters.outmode == 2)
-                printf("time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
-            else if (parameters.outmode == 3)
-                printf("t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+            if (parameters.outmode == 2) {
+                if (parameters.outFlag) {
+                    pthread_mutex_lock(&outfileLock);
+                    fprintf(optr, "time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+                    pthread_mutex_unlock(&outfileLock);
+                }
+                else 
+                    printf("time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+            }
+            else if (parameters.outmode == 3) {
+                if (parameters.outFlag) {
+                    pthread_mutex_lock(&outfileLock);
+                    fprintf(optr, "t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                    pthread_mutex_unlock(&outfileLock);
+                }
+                else 
+                    printf("t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+            }
 
             // simulate cpu burst (by sleeping)
             usleep(burstDuration * 1000);
@@ -99,8 +124,15 @@ static void* schedule(void *param) {
 
             // re-enqueue for RR
             if (parameters.ALG == RR && burstItem->remainingTime > 0) {
-                if (parameters.outmode == 3) 
-                    printf("t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                if (parameters.outmode == 3) {
+                    if (parameters.outFlag) {
+                        pthread_mutex_lock(&outfileLock);
+                        fprintf(optr, "t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                        pthread_mutex_unlock(&outfileLock);
+                    }
+                    else
+                        printf("t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                }
                 
                 pthread_mutex_lock(&lock[qid]);
                 enqueue(queues[qid], burstItem);
@@ -113,9 +145,17 @@ static void* schedule(void *param) {
                 burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
                 burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
 
-                if (parameters.outmode == 3)
-                    printf("t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
+                if (parameters.outmode == 3) {
+                    if (parameters.outFlag) {
+                        pthread_mutex_lock(&outfileLock);
+                        fprintf(optr, "t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
                         burstItem->turnaroundTime, burstItem->waitingTime);
+                        pthread_mutex_unlock(&outfileLock);
+                    }
+                    else
+                        printf("t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
+                        burstItem->turnaroundTime, burstItem->waitingTime);
+                }
 
                 pthread_mutex_lock(&finishedLock);
                 enqueue(finishedBursts, burstItem);
@@ -134,8 +174,15 @@ void selectQueue(BurstItem *item) {
         enqueue(queues[0], item);
         pthread_mutex_unlock(&lock[0]);
 
-        if (parameters.outmode == 3)
-            printf("t=%-5ld\tpid=%-2d--enqueued--> common queue\t (burstlen=%d)\n", getTimestamp(), item->pid, item->burstLength);
+        if (parameters.outmode == 3) {
+            if (parameters.outFlag) {
+                pthread_mutex_lock(&outfileLock);
+                fprintf(optr, "t=%-5ld\tpid=%-2d--enqueued--> common queue\t (burstlen=%d)\n", getTimestamp(), item->pid, item->burstLength);
+                pthread_mutex_unlock(&outfileLock);
+            }
+            else
+                printf("t=%-5ld\tpid=%-2d--enqueued--> common queue\t (burstlen=%d)\n", getTimestamp(), item->pid, item->burstLength);
+        }
     }
     // multi queue - round robin method
     else if (parameters.QS == RM) {
@@ -143,8 +190,15 @@ void selectQueue(BurstItem *item) {
         pthread_mutex_lock(&lock[qid]);
         item->processorID = qid;
         enqueue(queues[qid], item);
-        if (parameters.outmode == 3)
-            printf("t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);
+        if (parameters.outmode == 3) {
+            if (parameters.outFlag) {
+                pthread_mutex_lock(&outfileLock);
+                fprintf(optr, "t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);
+                pthread_mutex_unlock(&outfileLock);
+            }
+            else
+                printf("t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);
+        }
         pthread_mutex_unlock(&lock[qid]);
     }
     // multi queue - load balancing method
@@ -168,8 +222,15 @@ void selectQueue(BurstItem *item) {
 
         item->processorID = qid;
         enqueue(queues[qid], item);
-        if (parameters.outmode == 3) 
-            printf("t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);        
+        if (parameters.outmode == 3)  {
+            if (parameters.outFlag) {
+                pthread_mutex_lock(&outfileLock);
+                fprintf(optr, "t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);
+                pthread_mutex_unlock(&outfileLock);
+            }
+            else
+                printf("t=%-5ld\tpid=%-2d--enqueued--> queue for cid=%d\t (burstlen=%d)\n", getTimestamp(), item->pid, qid, item->burstLength);  
+        }      
         // release all locks
         for (int i = 0; i < parameters.N; i++) {
             pthread_mutex_unlock(&lock[i]);
@@ -206,15 +267,28 @@ void printBursts(BurstItem **bursts, int size) {
     int tt_sum = 0;
 
     // print the table
-    printf("\n%-5s %-4s %-10s %-5s %-7s %-11s %-10s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
-    for (int i = 0; i < size; i++) {
-        item = bursts[i];
-        tt_sum += item->turnaroundTime;
-        printf("%-5d %2d %7d %8ld %7ld %7ld %11ld\n", 
-            item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
+    if (parameters.outFlag) {
+        pthread_mutex_lock(&outfileLock);
+        fprintf(optr, "\n%-5s %-4s %-10s %-5s %-7s %-11s %-10s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
+        for (int i = 0; i < size; i++) {
+            item = bursts[i];
+            tt_sum += item->turnaroundTime;
+            fprintf(optr, "%-5d %2d %7d %8ld %7ld %7ld %11ld\n", 
+                item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
+        }
+        fprintf(optr, "average turnaround time: %d", tt_sum / size);
+        pthread_mutex_unlock(&outfileLock);
     }
-
-    printf("average turnaround time: %d\n", tt_sum / size);
+    else {
+        printf("\n%-5s %-4s %-10s %-5s %-7s %-11s %-10s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
+        for (int i = 0; i < size; i++) {
+            item = bursts[i];
+            tt_sum += item->turnaroundTime;
+            printf("%-5d %2d %7d %8ld %7ld %7ld %11ld\n", 
+                item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
+        }
+        printf("average turnaround time: %d\n", tt_sum / size);
+    }
 }
 
 int getRandomTime(int mean, int lower, int upper) {
@@ -286,6 +360,7 @@ void readParameters(int argc, char* argv[]) {
         else if (strcmp(cur, "-o") == 0) {
             i++;
             parameters.outfile = argv[i];
+            parameters.outFlag = 1;
         }
         else if (strcmp(cur, "-r") == 0) {
             parameters.random = 1;
@@ -325,41 +400,85 @@ int main(int argc, char* argv[]) {
         .infile = "in.txt",
         .outmode = 1,//1,
         .outfile = "",
-        .start_time = start_time
+        .start_time = start_time,
+        .outFlag = 0
     };
 
     readParameters(argc, argv);
 
-    if (parameters.outmode == 3) {
-        printf("Number of processors in simulation: %d\n", parameters.N);
-        if (parameters.SAP == 1)
-            printf("single-queue approach\n");
-        else if (parameters.SAP == 0 && parameters.QS == 0)
-            printf("multi-queue approach with round robin method\n");
-        else
-            printf("multi-queue approach with load-balancing method\n");
-        
-        if (parameters.ALG == 0)
-            printf("Scheduling algorithm: RR with time quantum %d ms\n", parameters.Q);
-        else if (parameters.ALG == 1)
-            printf("Scheduling algorithm: FCFS\n");
-        else
-            printf("Scheduling algorithm: SJF\n");
-        
-        if (parameters.random == 1) {
-            printf("Bursts and interarrival times will be created randomly with parameters:\n");
-            printf("T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
-        }
-    }
-
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
+
+    if (pthread_mutex_init(&finishedLock, NULL)) {
+        printf("couldn't initialize finished lock");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_mutex_init(&outfileLock, NULL)) {
+        printf("couldn't initialize outfile lock");
+        exit(EXIT_FAILURE);
+    }
     for (int i = 0; i < queueCount; i++) {
         int mut = pthread_mutex_init(&lock[i], NULL);
         if (mut) {
-            printf("couldn't initialize lock");
+            printf("couldn't initialize queue lock");
             exit(EXIT_FAILURE);
+        }
+    }
+
+    // open the outout file if flag is given
+    if (parameters.outFlag) {
+        optr = fopen(parameters.outfile, "w");
+        if (!optr) {
+            printf("cannot open output file");
+            exit(1);
+        }
+    }
+
+    if (parameters.outmode == 3) {
+        if (parameters.outFlag) {
+            pthread_mutex_lock(&outfileLock);
+            fprintf(optr, "Number of processors in simulation: %d\n", parameters.N);
+            if (parameters.SAP == 1)
+                fprintf(optr, "single-queue approach\n");
+            else if (parameters.SAP == 0 && parameters.QS == 0)
+                fprintf(optr, "multi-queue approach with round robin method\n");
+            else
+                fprintf(optr, "multi-queue approach with load-balancing method\n");
+            
+            if (parameters.ALG == 0)
+                fprintf(optr, "Scheduling algorithm: RR with time quantum %d ms\n", parameters.Q);
+            else if (parameters.ALG == 1)
+                fprintf(optr, "Scheduling algorithm: FCFS\n");
+            else
+                fprintf(optr, "Scheduling algorithm: SJF\n");
+            
+            if (parameters.random == 1) {
+                fprintf(optr, "Bursts and interarrival times will be created randomly with parameters:\n");
+                fprintf(optr, "T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
+            }
+            pthread_mutex_unlock(&outfileLock);
+        }
+        else {
+            printf("Number of processors in simulation: %d\n", parameters.N);
+            if (parameters.SAP == 1)
+                printf("single-queue approach\n");
+            else if (parameters.SAP == 0 && parameters.QS == 0)
+                printf("multi-queue approach with round robin method\n");
+            else
+                printf("multi-queue approach with load-balancing method\n");
+            
+            if (parameters.ALG == 0)
+                printf("Scheduling algorithm: RR with time quantum %d ms\n", parameters.Q);
+            else if (parameters.ALG == 1)
+                printf("Scheduling algorithm: FCFS\n");
+            else
+                printf("Scheduling algorithm: SJF\n");
+            
+            if (parameters.random == 1) {
+                printf("Bursts and interarrival times will be created randomly with parameters:\n");
+                printf("T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
+            }
         }
     }
 
@@ -459,4 +578,7 @@ int main(int argc, char* argv[]) {
     // }
     free(sortedBursts);
     freeList(finishedBursts);
+
+    // close output file
+    fclose(optr);
 }

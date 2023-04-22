@@ -1,0 +1,410 @@
+Number of processors in simulation: 2
+multi-queue approach with load-balancing method
+Scheduling algorithm: FCFS
+Bursts and interarrival times will be created randomly with parameters:
+T=200, T1=50, T2=600, L=100, L1=10, L2=400, PC=100
+t=0    	pid=1 --enqueued--> queue for cid=0	 (burstlen=183)
+t=1    	pid=1 --selected--> cpu=0  		 (burstlen=183, remainingtime=183)
+t=100  	pid=2 --enqueued--> queue for cid=0	 (burstlen=152)
+t=184  	pid=1 --finished-- cpu=0  		 (finish time: 184, turnaround time: 184, waiting time: 1)
+t=184  	pid=2 --selected--> cpu=0  		 (burstlen=152, remainingtime=152)
+t=336  	pid=2 --finished-- cpu=0  		 (finish time: 336, turnaround time: 236, waiting time: 84)
+t=420  	pid=3 --enqueued--> queue for cid=0	 (burstlen=242)
+t=420  	pid=3 --selected--> cpu=0  		 (burstlen=242, remainingtime=242)
+t=501  	pid=4 --enqueued--> queue for cid=0	 (burstlen=146)
+t=566  	pid=5 --enqueued--> queue for cid=1	 (burstlen=80)
+t=567  	pid=5 --selected--> cpu=1  		 (burstlen=80, remainingtime=80)
+t=647  	pid=5 --finished-- cpu=1  		 (finish time: 647, turnaround time: 81, waiting time: 1)
+t=663  	pid=3 --finished-- cpu=0  		 (finish time: 663, turnaround time: 243, waiting time: 1)
+t=663  	pid=4 --selected--> cpu=0  		 (burstlen=146, remainingtime=146)
+t=695  	pid=6 --enqueued--> queue for cid=0	 (burstlen=99)
+t=785  	pid=7 --enqueued--> queue for cid=1	 (burstlen=72)
+t=785  	pid=7 --selected--> cpu=1  		 (burstlen=72, remainingtime=72)
+t=809  	pid=4 --finished-- cpu=0  		 (finish time: 809, turnaround time: 308, waiting time: 162)
+t=809  	pid=6 --selected--> cpu=0  		 (burstlen=99, remainingtime=99)
+t=857  	pid=7 --finished-- cpu=1  		 (finish time: 857, turnaround time: 72, waiting time: 0)
+t=908  	pid=6 --finished-- cpu=0  		 (finish time: 908, turnaround time: 213, waiting time: 114)
+t=1280 	pid=8 --enqueued--> queue for cid=0	 (burstlen=100)
+t=1280 	pid=8 --selected--> cpu=0  		 (burstlen=100, remainingtime=100)
+t=1381 	pid=8 --finished-- cpu=0  		 (finish time: 1381, turnaround time: 101, waiting time: 1)
+t=1532 	pid=9 --enqueued--> queue for cid=0	 (burstlen=15)
+t=1533 	pid=9 --selected--> cpu=0  		 (burstlen=15, remainingtime=15)
+t=1548 	pid=9 --finished-- cpu=0  		 (finish time: 1548, turnaround time: 16, waiting time: 1)
+t=1718 	pid=10--enqueued--> queue for cid=0	 (burstlen=27)
+t=1719 	pid=10--selected--> cpu=0  		 (burstlen=27, remainingtime=27)
+t=1746 	pid=10--finished-- cpu=0  		 (finish time: 1746, turnaround time: 28, waiting time: 1)
+t=2044 	pid=11--enqueued--> queue for cid=0	 (burstlen=17)
+t=2045 	pid=11--selected--> cpu=0  		 (burstlen=17, remainingtime=17)
+t=2062 	pid=11--finished-- cpu=0  		 (finish time: 2062, turnaround time: 18, waiting time: 1)
+t=2146 	pid=12--enqueued--> queue for cid=0	 (burstlen=13)
+t=2147 	pid=12--selected--> cpu=0  		 (burstlen=13, remainingtime=13)
+t=2160 	pid=12--finished-- cpu=0  		 (finish time: 2160, turnaround time: 14, waiting time: 1)
+t=2290 	pid=13--enqueued--> queue for cid=0	 (burstlen=182)
+t=2290 	pid=13--selected--> cpu=0  		 (burstlen=182, remainingtime=182)
+t=2472 	pid=13--finished-- cpu=0  		 (finish time: 2472, turnaround time: 182, waiting time: 0)
+t=2479 	pid=14--enqueued--> queue for cid=0	 (burstlen=35)
+t=2479 	pid=14--selected--> cpu=0  		 (burstlen=35, remainingtime=35)
+t=2514 	pid=14--finished-- cpu=0  		 (finish time: 2514, turnaround time: 35, waiting time: 0)
+t=2681 	pid=15--enqueued--> queue for cid=0	 (burstlen=74)
+t=2682 	pid=15--selected--> cpu=0  		 (burstlen=74, remainingtime=74)
+t=2756 	pid=15--finished-- cpu=0  		 (finish time: 2756, turnaround time: 75, waiting time: 1)
+t=2817 	pid=16--enqueued--> queue for cid=0	 (burstlen=360)
+t=2817 	pid=16--selected--> cpu=0  		 (burstlen=360, remainingtime=360)
+t=2886 	pid=17--enqueued--> queue for cid=0	 (burstlen=147)
+t=3035 	pid=18--enqueued--> queue for cid=1	 (burstlen=146)
+t=3035 	pid=18--selected--> cpu=1  		 (burstlen=146, remainingtime=146)
+t=3137 	pid=19--enqueued--> queue for cid=1	 (burstlen=222)
+t=3177 	pid=16--finished-- cpu=0  		 (finish time: 3177, turnaround time: 360, waiting time: 0)
+t=3177 	pid=17--selected--> cpu=0  		 (burstlen=147, remainingtime=147)
+t=3181 	pid=18--finished-- cpu=1  		 (finish time: 3181, turnaround time: 146, waiting time: 0)
+t=3181 	pid=19--selected--> cpu=1  		 (burstlen=222, remainingtime=222)
+t=3203 	pid=20--enqueued--> queue for cid=0	 (burstlen=43)
+t=3324 	pid=17--finished-- cpu=0  		 (finish time: 3324, turnaround time: 438, waiting time: 291)
+t=3324 	pid=20--selected--> cpu=0  		 (burstlen=43, remainingtime=43)
+t=3367 	pid=20--finished-- cpu=0  		 (finish time: 3367, turnaround time: 164, waiting time: 121)
+t=3403 	pid=19--finished-- cpu=1  		 (finish time: 3403, turnaround time: 266, waiting time: 44)
+t=3532 	pid=21--enqueued--> queue for cid=0	 (burstlen=251)
+t=3533 	pid=21--selected--> cpu=0  		 (burstlen=251, remainingtime=251)
+t=3784 	pid=21--finished-- cpu=0  		 (finish time: 3784, turnaround time: 252, waiting time: 1)
+t=4128 	pid=22--enqueued--> queue for cid=0	 (burstlen=74)
+t=4129 	pid=22--selected--> cpu=0  		 (burstlen=74, remainingtime=74)
+t=4203 	pid=22--finished-- cpu=0  		 (finish time: 4203, turnaround time: 75, waiting time: 1)
+t=4345 	pid=23--enqueued--> queue for cid=0	 (burstlen=220)
+t=4346 	pid=23--selected--> cpu=0  		 (burstlen=220, remainingtime=220)
+t=4430 	pid=24--enqueued--> queue for cid=0	 (burstlen=61)
+t=4484 	pid=25--enqueued--> queue for cid=1	 (burstlen=352)
+t=4485 	pid=25--selected--> cpu=1  		 (burstlen=352, remainingtime=352)
+t=4566 	pid=23--finished-- cpu=0  		 (finish time: 4566, turnaround time: 221, waiting time: 1)
+t=4566 	pid=24--selected--> cpu=0  		 (burstlen=61, remainingtime=61)
+t=4627 	pid=24--finished-- cpu=0  		 (finish time: 4627, turnaround time: 197, waiting time: 136)
+t=4837 	pid=25--finished-- cpu=1  		 (finish time: 4837, turnaround time: 353, waiting time: 1)
+t=4948 	pid=26--enqueued--> queue for cid=0	 (burstlen=190)
+t=4949 	pid=26--selected--> cpu=0  		 (burstlen=190, remainingtime=190)
+t=5011 	pid=27--enqueued--> queue for cid=0	 (burstlen=77)
+t=5105 	pid=28--enqueued--> queue for cid=1	 (burstlen=142)
+t=5105 	pid=28--selected--> cpu=1  		 (burstlen=142, remainingtime=142)
+t=5139 	pid=26--finished-- cpu=0  		 (finish time: 5139, turnaround time: 191, waiting time: 1)
+t=5139 	pid=27--selected--> cpu=0  		 (burstlen=77, remainingtime=77)
+t=5216 	pid=27--finished-- cpu=0  		 (finish time: 5216, turnaround time: 205, waiting time: 128)
+t=5247 	pid=28--finished-- cpu=1  		 (finish time: 5247, turnaround time: 142, waiting time: 0)
+t=5248 	pid=29--enqueued--> queue for cid=0	 (burstlen=110)
+t=5248 	pid=29--selected--> cpu=0  		 (burstlen=110, remainingtime=110)
+t=5358 	pid=29--finished-- cpu=0  		 (finish time: 5358, turnaround time: 110, waiting time: 0)
+t=5399 	pid=30--enqueued--> queue for cid=0	 (burstlen=57)
+t=5399 	pid=30--selected--> cpu=0  		 (burstlen=57, remainingtime=57)
+t=5456 	pid=30--finished-- cpu=0  		 (finish time: 5456, turnaround time: 57, waiting time: 0)
+t=5936 	pid=31--enqueued--> queue for cid=0	 (burstlen=267)
+t=5936 	pid=31--selected--> cpu=0  		 (burstlen=267, remainingtime=267)
+t=6191 	pid=32--enqueued--> queue for cid=0	 (burstlen=33)
+t=6203 	pid=31--finished-- cpu=0  		 (finish time: 6203, turnaround time: 267, waiting time: 0)
+t=6203 	pid=32--selected--> cpu=0  		 (burstlen=33, remainingtime=33)
+t=6236 	pid=32--finished-- cpu=0  		 (finish time: 6236, turnaround time: 45, waiting time: 12)
+t=6459 	pid=33--enqueued--> queue for cid=0	 (burstlen=102)
+t=6460 	pid=33--selected--> cpu=0  		 (burstlen=102, remainingtime=102)
+t=6546 	pid=34--enqueued--> queue for cid=0	 (burstlen=116)
+t=6562 	pid=33--finished-- cpu=0  		 (finish time: 6562, turnaround time: 103, waiting time: 1)
+t=6562 	pid=34--selected--> cpu=0  		 (burstlen=116, remainingtime=116)
+t=6662 	pid=35--enqueued--> queue for cid=0	 (burstlen=212)
+t=6678 	pid=34--finished-- cpu=0  		 (finish time: 6678, turnaround time: 132, waiting time: 16)
+t=6678 	pid=35--selected--> cpu=0  		 (burstlen=212, remainingtime=212)
+t=6890 	pid=35--finished-- cpu=0  		 (finish time: 6890, turnaround time: 228, waiting time: 16)
+t=7015 	pid=36--enqueued--> queue for cid=0	 (burstlen=40)
+t=7016 	pid=36--selected--> cpu=0  		 (burstlen=40, remainingtime=40)
+t=7056 	pid=36--finished-- cpu=0  		 (finish time: 7056, turnaround time: 41, waiting time: 1)
+t=7067 	pid=37--enqueued--> queue for cid=0	 (burstlen=223)
+t=7067 	pid=37--selected--> cpu=0  		 (burstlen=223, remainingtime=223)
+t=7154 	pid=38--enqueued--> queue for cid=0	 (burstlen=116)
+t=7291 	pid=37--finished-- cpu=0  		 (finish time: 7291, turnaround time: 224, waiting time: 1)
+t=7291 	pid=38--selected--> cpu=0  		 (burstlen=116, remainingtime=116)
+t=7331 	pid=39--enqueued--> queue for cid=0	 (burstlen=107)
+t=7407 	pid=38--finished-- cpu=0  		 (finish time: 7407, turnaround time: 253, waiting time: 137)
+t=7407 	pid=39--selected--> cpu=0  		 (burstlen=107, remainingtime=107)
+t=7514 	pid=39--finished-- cpu=0  		 (finish time: 7514, turnaround time: 183, waiting time: 76)
+t=7722 	pid=40--enqueued--> queue for cid=0	 (burstlen=57)
+t=7722 	pid=40--selected--> cpu=0  		 (burstlen=57, remainingtime=57)
+t=7779 	pid=40--finished-- cpu=0  		 (finish time: 7779, turnaround time: 57, waiting time: 0)
+t=8237 	pid=41--enqueued--> queue for cid=0	 (burstlen=50)
+t=8238 	pid=41--selected--> cpu=0  		 (burstlen=50, remainingtime=50)
+t=8288 	pid=41--finished-- cpu=0  		 (finish time: 8288, turnaround time: 51, waiting time: 1)
+t=8574 	pid=42--enqueued--> queue for cid=0	 (burstlen=115)
+t=8574 	pid=42--selected--> cpu=0  		 (burstlen=115, remainingtime=115)
+t=8689 	pid=42--finished-- cpu=0  		 (finish time: 8689, turnaround time: 115, waiting time: 0)
+t=9057 	pid=43--enqueued--> queue for cid=0	 (burstlen=65)
+t=9057 	pid=43--selected--> cpu=0  		 (burstlen=65, remainingtime=65)
+t=9123 	pid=43--finished-- cpu=0  		 (finish time: 9123, turnaround time: 66, waiting time: 1)
+t=9562 	pid=44--enqueued--> queue for cid=0	 (burstlen=15)
+t=9563 	pid=44--selected--> cpu=0  		 (burstlen=15, remainingtime=15)
+t=9578 	pid=44--finished-- cpu=0  		 (finish time: 9578, turnaround time: 16, waiting time: 1)
+t=9987 	pid=45--enqueued--> queue for cid=0	 (burstlen=102)
+t=9988 	pid=45--selected--> cpu=0  		 (burstlen=102, remainingtime=102)
+t=10090	pid=45--finished-- cpu=0  		 (finish time: 10090, turnaround time: 103, waiting time: 1)
+t=10100	pid=46--enqueued--> queue for cid=0	 (burstlen=96)
+t=10101	pid=46--selected--> cpu=0  		 (burstlen=96, remainingtime=96)
+t=10165	pid=47--enqueued--> queue for cid=0	 (burstlen=154)
+t=10197	pid=46--finished-- cpu=0  		 (finish time: 10197, turnaround time: 97, waiting time: 1)
+t=10197	pid=47--selected--> cpu=0  		 (burstlen=154, remainingtime=154)
+t=10239	pid=48--enqueued--> queue for cid=0	 (burstlen=59)
+t=10290	pid=49--enqueued--> queue for cid=1	 (burstlen=20)
+t=10290	pid=49--selected--> cpu=1  		 (burstlen=20, remainingtime=20)
+t=10310	pid=49--finished-- cpu=1  		 (finish time: 10310, turnaround time: 20, waiting time: 0)
+t=10351	pid=47--finished-- cpu=0  		 (finish time: 10351, turnaround time: 186, waiting time: 32)
+t=10351	pid=48--selected--> cpu=0  		 (burstlen=59, remainingtime=59)
+t=10354	pid=50--enqueued--> queue for cid=0	 (burstlen=81)
+t=10410	pid=48--finished-- cpu=0  		 (finish time: 10410, turnaround time: 171, waiting time: 112)
+t=10410	pid=50--selected--> cpu=0  		 (burstlen=81, remainingtime=81)
+t=10461	pid=51--enqueued--> queue for cid=0	 (burstlen=18)
+t=10491	pid=50--finished-- cpu=0  		 (finish time: 10491, turnaround time: 137, waiting time: 56)
+t=10491	pid=51--selected--> cpu=0  		 (burstlen=18, remainingtime=18)
+t=10509	pid=51--finished-- cpu=0  		 (finish time: 10509, turnaround time: 48, waiting time: 30)
+t=10935	pid=52--enqueued--> queue for cid=0	 (burstlen=10)
+t=10935	pid=52--selected--> cpu=0  		 (burstlen=10, remainingtime=10)
+t=10945	pid=52--finished-- cpu=0  		 (finish time: 10945, turnaround time: 10, waiting time: 0)
+t=11071	pid=53--enqueued--> queue for cid=0	 (burstlen=142)
+t=11071	pid=53--selected--> cpu=0  		 (burstlen=142, remainingtime=142)
+t=11213	pid=53--finished-- cpu=0  		 (finish time: 11213, turnaround time: 142, waiting time: 0)
+t=11617	pid=54--enqueued--> queue for cid=0	 (burstlen=115)
+t=11617	pid=54--selected--> cpu=0  		 (burstlen=115, remainingtime=115)
+t=11713	pid=55--enqueued--> queue for cid=0	 (burstlen=138)
+t=11732	pid=54--finished-- cpu=0  		 (finish time: 11732, turnaround time: 115, waiting time: 0)
+t=11732	pid=55--selected--> cpu=0  		 (burstlen=138, remainingtime=138)
+t=11804	pid=56--enqueued--> queue for cid=0	 (burstlen=34)
+t=11856	pid=57--enqueued--> queue for cid=1	 (burstlen=87)
+t=11856	pid=57--selected--> cpu=1  		 (burstlen=87, remainingtime=87)
+t=11870	pid=55--finished-- cpu=0  		 (finish time: 11870, turnaround time: 157, waiting time: 19)
+t=11870	pid=56--selected--> cpu=0  		 (burstlen=34, remainingtime=34)
+t=11904	pid=56--finished-- cpu=0  		 (finish time: 11904, turnaround time: 100, waiting time: 66)
+t=11912	pid=58--enqueued--> queue for cid=0	 (burstlen=16)
+t=11913	pid=58--selected--> cpu=0  		 (burstlen=16, remainingtime=16)
+t=11929	pid=58--finished-- cpu=0  		 (finish time: 11929, turnaround time: 17, waiting time: 1)
+t=11943	pid=57--finished-- cpu=1  		 (finish time: 11943, turnaround time: 87, waiting time: 0)
+t=12175	pid=59--enqueued--> queue for cid=0	 (burstlen=13)
+t=12176	pid=59--selected--> cpu=0  		 (burstlen=13, remainingtime=13)
+t=12189	pid=59--finished-- cpu=0  		 (finish time: 12189, turnaround time: 14, waiting time: 1)
+t=12490	pid=60--enqueued--> queue for cid=0	 (burstlen=17)
+t=12491	pid=60--selected--> cpu=0  		 (burstlen=17, remainingtime=17)
+t=12508	pid=60--finished-- cpu=0  		 (finish time: 12508, turnaround time: 18, waiting time: 1)
+t=12764	pid=61--enqueued--> queue for cid=0	 (burstlen=299)
+t=12764	pid=61--selected--> cpu=0  		 (burstlen=299, remainingtime=299)
+t=12911	pid=62--enqueued--> queue for cid=0	 (burstlen=19)
+t=12965	pid=63--enqueued--> queue for cid=1	 (burstlen=159)
+t=12965	pid=63--selected--> cpu=1  		 (burstlen=159, remainingtime=159)
+t=13064	pid=61--finished-- cpu=0  		 (finish time: 13064, turnaround time: 300, waiting time: 1)
+t=13064	pid=62--selected--> cpu=0  		 (burstlen=19, remainingtime=19)
+t=13083	pid=62--finished-- cpu=0  		 (finish time: 13083, turnaround time: 172, waiting time: 153)
+t=13124	pid=63--finished-- cpu=1  		 (finish time: 13124, turnaround time: 159, waiting time: 0)
+t=13228	pid=64--enqueued--> queue for cid=0	 (burstlen=106)
+t=13228	pid=64--selected--> cpu=0  		 (burstlen=106, remainingtime=106)
+t=13334	pid=64--finished-- cpu=0  		 (finish time: 13334, turnaround time: 106, waiting time: 0)
+t=13432	pid=65--enqueued--> queue for cid=0	 (burstlen=142)
+t=13432	pid=65--selected--> cpu=0  		 (burstlen=142, remainingtime=142)
+t=13574	pid=65--finished-- cpu=0  		 (finish time: 13574, turnaround time: 142, waiting time: 0)
+t=13578	pid=66--enqueued--> queue for cid=0	 (burstlen=22)
+t=13579	pid=66--selected--> cpu=0  		 (burstlen=22, remainingtime=22)
+t=13601	pid=66--finished-- cpu=0  		 (finish time: 13601, turnaround time: 23, waiting time: 1)
+t=13701	pid=67--enqueued--> queue for cid=0	 (burstlen=171)
+t=13701	pid=67--selected--> cpu=0  		 (burstlen=171, remainingtime=171)
+t=13871	pid=68--enqueued--> queue for cid=0	 (burstlen=140)
+t=13873	pid=67--finished-- cpu=0  		 (finish time: 13873, turnaround time: 172, waiting time: 1)
+t=13873	pid=68--selected--> cpu=0  		 (burstlen=140, remainingtime=140)
+t=14013	pid=68--finished-- cpu=0  		 (finish time: 14013, turnaround time: 142, waiting time: 2)
+t=14312	pid=69--enqueued--> queue for cid=0	 (burstlen=13)
+t=14312	pid=69--selected--> cpu=0  		 (burstlen=13, remainingtime=13)
+t=14326	pid=69--finished-- cpu=0  		 (finish time: 14326, turnaround time: 14, waiting time: 1)
+t=14720	pid=70--enqueued--> queue for cid=0	 (burstlen=256)
+t=14721	pid=70--selected--> cpu=0  		 (burstlen=256, remainingtime=256)
+t=14901	pid=71--enqueued--> queue for cid=0	 (burstlen=19)
+t=14977	pid=70--finished-- cpu=0  		 (finish time: 14977, turnaround time: 257, waiting time: 1)
+t=14977	pid=71--selected--> cpu=0  		 (burstlen=19, remainingtime=19)
+t=14996	pid=71--finished-- cpu=0  		 (finish time: 14996, turnaround time: 95, waiting time: 76)
+t=15000	pid=72--enqueued--> queue for cid=0	 (burstlen=244)
+t=15000	pid=72--selected--> cpu=0  		 (burstlen=244, remainingtime=244)
+t=15245	pid=72--finished-- cpu=0  		 (finish time: 15245, turnaround time: 245, waiting time: 1)
+t=15342	pid=73--enqueued--> queue for cid=0	 (burstlen=44)
+t=15342	pid=73--selected--> cpu=0  		 (burstlen=44, remainingtime=44)
+t=15386	pid=73--finished-- cpu=0  		 (finish time: 15386, turnaround time: 44, waiting time: 0)
+t=15502	pid=74--enqueued--> queue for cid=0	 (burstlen=86)
+t=15502	pid=74--selected--> cpu=0  		 (burstlen=86, remainingtime=86)
+t=15588	pid=74--finished-- cpu=0  		 (finish time: 15588, turnaround time: 86, waiting time: 0)
+t=15622	pid=75--enqueued--> queue for cid=0	 (burstlen=116)
+t=15622	pid=75--selected--> cpu=0  		 (burstlen=116, remainingtime=116)
+t=15738	pid=75--finished-- cpu=0  		 (finish time: 15738, turnaround time: 116, waiting time: 0)
+t=15773	pid=76--enqueued--> queue for cid=0	 (burstlen=141)
+t=15774	pid=76--selected--> cpu=0  		 (burstlen=141, remainingtime=141)
+t=15845	pid=77--enqueued--> queue for cid=0	 (burstlen=86)
+t=15915	pid=76--finished-- cpu=0  		 (finish time: 15915, turnaround time: 142, waiting time: 1)
+t=15915	pid=77--selected--> cpu=0  		 (burstlen=86, remainingtime=86)
+t=16001	pid=77--finished-- cpu=0  		 (finish time: 16001, turnaround time: 156, waiting time: 70)
+t=16265	pid=78--enqueued--> queue for cid=0	 (burstlen=137)
+t=16266	pid=78--selected--> cpu=0  		 (burstlen=137, remainingtime=137)
+t=16403	pid=78--finished-- cpu=0  		 (finish time: 16403, turnaround time: 138, waiting time: 1)
+t=16463	pid=79--enqueued--> queue for cid=0	 (burstlen=137)
+t=16464	pid=79--selected--> cpu=0  		 (burstlen=137, remainingtime=137)
+t=16601	pid=79--finished-- cpu=0  		 (finish time: 16601, turnaround time: 138, waiting time: 1)
+t=16822	pid=80--enqueued--> queue for cid=0	 (burstlen=259)
+t=16822	pid=80--selected--> cpu=0  		 (burstlen=259, remainingtime=259)
+t=17081	pid=80--finished-- cpu=0  		 (finish time: 17081, turnaround time: 259, waiting time: 0)
+t=17235	pid=81--enqueued--> queue for cid=0	 (burstlen=177)
+t=17235	pid=81--selected--> cpu=0  		 (burstlen=177, remainingtime=177)
+t=17412	pid=81--finished-- cpu=0  		 (finish time: 17412, turnaround time: 177, waiting time: 0)
+t=17507	pid=82--enqueued--> queue for cid=0	 (burstlen=233)
+t=17507	pid=82--selected--> cpu=0  		 (burstlen=233, remainingtime=233)
+t=17726	pid=83--enqueued--> queue for cid=0	 (burstlen=68)
+t=17740	pid=82--finished-- cpu=0  		 (finish time: 17740, turnaround time: 233, waiting time: 0)
+t=17740	pid=83--selected--> cpu=0  		 (burstlen=68, remainingtime=68)
+t=17808	pid=83--finished-- cpu=0  		 (finish time: 17808, turnaround time: 82, waiting time: 14)
+t=18080	pid=84--enqueued--> queue for cid=0	 (burstlen=219)
+t=18080	pid=84--selected--> cpu=0  		 (burstlen=219, remainingtime=219)
+t=18289	pid=85--enqueued--> queue for cid=0	 (burstlen=28)
+t=18299	pid=84--finished-- cpu=0  		 (finish time: 18299, turnaround time: 219, waiting time: 0)
+t=18299	pid=85--selected--> cpu=0  		 (burstlen=28, remainingtime=28)
+t=18328	pid=85--finished-- cpu=0  		 (finish time: 18328, turnaround time: 39, waiting time: 11)
+t=18487	pid=86--enqueued--> queue for cid=0	 (burstlen=26)
+t=18487	pid=86--selected--> cpu=0  		 (burstlen=26, remainingtime=26)
+t=18513	pid=86--finished-- cpu=0  		 (finish time: 18513, turnaround time: 26, waiting time: 0)
+t=18728	pid=87--enqueued--> queue for cid=0	 (burstlen=38)
+t=18728	pid=87--selected--> cpu=0  		 (burstlen=38, remainingtime=38)
+t=18766	pid=87--finished-- cpu=0  		 (finish time: 18766, turnaround time: 38, waiting time: 0)
+t=18807	pid=88--enqueued--> queue for cid=0	 (burstlen=26)
+t=18807	pid=88--selected--> cpu=0  		 (burstlen=26, remainingtime=26)
+t=18833	pid=88--finished-- cpu=0  		 (finish time: 18833, turnaround time: 26, waiting time: 0)
+t=19007	pid=89--enqueued--> queue for cid=0	 (burstlen=25)
+t=19007	pid=89--selected--> cpu=0  		 (burstlen=25, remainingtime=25)
+t=19032	pid=89--finished-- cpu=0  		 (finish time: 19032, turnaround time: 25, waiting time: 0)
+t=19217	pid=90--enqueued--> queue for cid=0	 (burstlen=71)
+t=19218	pid=90--selected--> cpu=0  		 (burstlen=71, remainingtime=71)
+t=19282	pid=91--enqueued--> queue for cid=0	 (burstlen=78)
+t=19289	pid=90--finished-- cpu=0  		 (finish time: 19289, turnaround time: 72, waiting time: 1)
+t=19289	pid=91--selected--> cpu=0  		 (burstlen=78, remainingtime=78)
+t=19367	pid=91--finished-- cpu=0  		 (finish time: 19367, turnaround time: 85, waiting time: 7)
+t=19536	pid=92--enqueued--> queue for cid=0	 (burstlen=12)
+t=19537	pid=92--selected--> cpu=0  		 (burstlen=12, remainingtime=12)
+t=19549	pid=92--finished-- cpu=0  		 (finish time: 19549, turnaround time: 13, waiting time: 1)
+t=19663	pid=93--enqueued--> queue for cid=0	 (burstlen=89)
+t=19664	pid=93--selected--> cpu=0  		 (burstlen=89, remainingtime=89)
+t=19753	pid=93--finished-- cpu=0  		 (finish time: 19753, turnaround time: 90, waiting time: 1)
+t=20240	pid=94--enqueued--> queue for cid=0	 (burstlen=59)
+t=20241	pid=94--selected--> cpu=0  		 (burstlen=59, remainingtime=59)
+t=20300	pid=94--finished-- cpu=0  		 (finish time: 20300, turnaround time: 60, waiting time: 1)
+t=20323	pid=95--enqueued--> queue for cid=0	 (burstlen=188)
+t=20323	pid=95--selected--> cpu=0  		 (burstlen=188, remainingtime=188)
+t=20437	pid=96--enqueued--> queue for cid=0	 (burstlen=42)
+t=20511	pid=95--finished-- cpu=0  		 (finish time: 20511, turnaround time: 188, waiting time: 0)
+t=20511	pid=96--selected--> cpu=0  		 (burstlen=42, remainingtime=42)
+t=20553	pid=96--finished-- cpu=0  		 (finish time: 20553, turnaround time: 116, waiting time: 74)
+t=20619	pid=97--enqueued--> queue for cid=0	 (burstlen=179)
+t=20619	pid=97--selected--> cpu=0  		 (burstlen=179, remainingtime=179)
+t=20672	pid=98--enqueued--> queue for cid=0	 (burstlen=112)
+t=20798	pid=97--finished-- cpu=0  		 (finish time: 20798, turnaround time: 179, waiting time: 0)
+t=20798	pid=98--selected--> cpu=0  		 (burstlen=112, remainingtime=112)
+t=20803	pid=99--enqueued--> queue for cid=0	 (burstlen=65)
+t=20875	pid=100--enqueued--> queue for cid=1	 (burstlen=124)
+t=20876	pid=100--selected--> cpu=1  		 (burstlen=124, remainingtime=124)
+t=20910	pid=98--finished-- cpu=0  		 (finish time: 20910, turnaround time: 238, waiting time: 126)
+t=20910	pid=99--selected--> cpu=0  		 (burstlen=65, remainingtime=65)
+t=20975	pid=99--finished-- cpu=0  		 (finish time: 20975, turnaround time: 172, waiting time: 107)
+t=20975	cpu=0  finished working
+t=21000	pid=100--finished-- cpu=1  		 (finish time: 21000, turnaround time: 125, waiting time: 1)
+t=21000	cpu=1  finished working
+
+pid   cpu  burstlen   arv   finish  waitingtime turnaround
+1      0     183        0     184       1         184
+2      0     152      100     336      84         236
+3      0     242      420     663       1         243
+4      0     146      501     809     162         308
+5      1      80      566     647       1          81
+6      0      99      695     908     114         213
+7      1      72      785     857       0          72
+8      0     100     1280    1381       1         101
+9      0      15     1532    1548       1          16
+10     0      27     1718    1746       1          28
+11     0      17     2044    2062       1          18
+12     0      13     2146    2160       1          14
+13     0     182     2290    2472       0         182
+14     0      35     2479    2514       0          35
+15     0      74     2681    2756       1          75
+16     0     360     2817    3177       0         360
+17     0     147     2886    3324     291         438
+18     1     146     3035    3181       0         146
+19     1     222     3137    3403      44         266
+20     0      43     3203    3367     121         164
+21     0     251     3532    3784       1         252
+22     0      74     4128    4203       1          75
+23     0     220     4345    4566       1         221
+24     0      61     4430    4627     136         197
+25     1     352     4484    4837       1         353
+26     0     190     4948    5139       1         191
+27     0      77     5011    5216     128         205
+28     1     142     5105    5247       0         142
+29     0     110     5248    5358       0         110
+30     0      57     5399    5456       0          57
+31     0     267     5936    6203       0         267
+32     0      33     6191    6236      12          45
+33     0     102     6459    6562       1         103
+34     0     116     6546    6678      16         132
+35     0     212     6662    6890      16         228
+36     0      40     7015    7056       1          41
+37     0     223     7067    7291       1         224
+38     0     116     7154    7407     137         253
+39     0     107     7331    7514      76         183
+40     0      57     7722    7779       0          57
+41     0      50     8237    8288       1          51
+42     0     115     8574    8689       0         115
+43     0      65     9057    9123       1          66
+44     0      15     9562    9578       1          16
+45     0     102     9987   10090       1         103
+46     0      96    10100   10197       1          97
+47     0     154    10165   10351      32         186
+48     0      59    10239   10410     112         171
+49     1      20    10290   10310       0          20
+50     0      81    10354   10491      56         137
+51     0      18    10461   10509      30          48
+52     0      10    10935   10945       0          10
+53     0     142    11071   11213       0         142
+54     0     115    11617   11732       0         115
+55     0     138    11713   11870      19         157
+56     0      34    11804   11904      66         100
+57     1      87    11856   11943       0          87
+58     0      16    11912   11929       1          17
+59     0      13    12175   12189       1          14
+60     0      17    12490   12508       1          18
+61     0     299    12764   13064       1         300
+62     0      19    12911   13083     153         172
+63     1     159    12965   13124       0         159
+64     0     106    13228   13334       0         106
+65     0     142    13432   13574       0         142
+66     0      22    13578   13601       1          23
+67     0     171    13701   13873       1         172
+68     0     140    13871   14013       2         142
+69     0      13    14312   14326       1          14
+70     0     256    14720   14977       1         257
+71     0      19    14901   14996      76          95
+72     0     244    15000   15245       1         245
+73     0      44    15342   15386       0          44
+74     0      86    15502   15588       0          86
+75     0     116    15622   15738       0         116
+76     0     141    15773   15915       1         142
+77     0      86    15845   16001      70         156
+78     0     137    16265   16403       1         138
+79     0     137    16463   16601       1         138
+80     0     259    16822   17081       0         259
+81     0     177    17235   17412       0         177
+82     0     233    17507   17740       0         233
+83     0      68    17726   17808      14          82
+84     0     219    18080   18299       0         219
+85     0      28    18289   18328      11          39
+86     0      26    18487   18513       0          26
+87     0      38    18728   18766       0          38
+88     0      26    18807   18833       0          26
+89     0      25    19007   19032       0          25
+90     0      71    19217   19289       1          72
+91     0      78    19282   19367       7          85
+92     0      12    19536   19549       1          13
+93     0      89    19663   19753       1          90
+94     0      59    20240   20300       1          60
+95     0     188    20323   20511       0         188
+96     0      42    20437   20553      74         116
+97     0     179    20619   20798       0         179
+98     0     112    20672   20910     126         238
+99     0      65    20803   20975     107         172
+100    1     124    20875   21000       1         125
+average turnaround time: 132
