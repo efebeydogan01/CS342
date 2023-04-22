@@ -219,25 +219,7 @@ void printBursts(BurstItem **bursts, int size) {
     printf("average turnaround time: %d\n", tt_sum / size);
 }
 
-int main(int argc, char* argv[]) {
-    // get the start time of the program
-    struct timeval start_time;
-    gettimeofday(&start_time, NULL);
-
-    parameters = (Parameters) {
-        .N = 2,
-        .SAP = M,
-        .QS = RM,
-        .ALG = RR,
-        .Q = 20,
-        .random = 0,
-        .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
-        .infile = "in.txt",
-        .outmode = 2,//1,
-        .outfile = "",
-        .start_time = start_time
-    };
-
+void readParameters(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         char *cur = argv[i];
         if (strcmp(cur, "-n") == 0) {
@@ -268,37 +250,58 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(cur, "-i") == 0) {
             i++;
-            strcpy(parameters.infile, argv[i]);
-            // parameters.infile = argv[i];
+            parameters.infile = argv[i];
         }
-    //     else if (strcmp(cur, "-m") == 0) {
-    //         i++;
-    //         parameters.outmode = atoi(argv[i]);
-    //     }
-    //     else if (strcmp(cur, "-o") == 0) {
-    //         i++;
-    //         parameters.outfile = argv[i];
-    //     }
-    //     else if (strcmp(cur, "-r") == 0) {
-    //         parameters.random = 1;
-    //         i++;
-    //         parameters.T = atoi(argv[i]);
-    //         i++;
-    //         parameters.T1 = atoi(argv[i]);
-    //         i++;
-    //         parameters.T2 = atoi(argv[i]);
-    //         i++;
-    //         parameters.L = atoi(argv[i]);
-    //         i++;
-    //         parameters.L1 = atoi(argv[i]);
-    //         i++;
-    //         parameters.L2 = atoi(argv[i]);
-    //         i++;
-    //         parameters.PC = atoi(argv[i]);
-    //     }
+        else if (strcmp(cur, "-m") == 0) {
+            i++;
+            parameters.outmode = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-o") == 0) {
+            i++;
+            parameters.outfile = argv[i];
+        }
+        else if (strcmp(cur, "-r") == 0) {
+            parameters.random = 1;
+            i++;
+            parameters.T = atoi(argv[i]);
+            i++;
+            parameters.T1 = atoi(argv[i]);
+            i++;
+            parameters.T2 = atoi(argv[i]);
+            i++;
+            parameters.L = atoi(argv[i]);
+            i++;
+            parameters.L1 = atoi(argv[i]);
+            i++;
+            parameters.L2 = atoi(argv[i]);
+            i++;
+            parameters.PC = atoi(argv[i]);
+        }
     }
 
     // if (!r && )
+}
+
+int main(int argc, char* argv[]) {
+    // get the start time of the program
+    struct timeval start_time;
+    gettimeofday(&start_time, NULL);
+
+    parameters = (Parameters) {
+        .N = 2,
+        .SAP = M,
+        .QS = RM,
+        .ALG = RR,
+        .Q = 20,
+        .random = 0,
+        .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
+        .infile = "in.txt",
+        .outmode = 2,//1,
+        .outfile = "",
+        .start_time = start_time
+    };
+
+    readParameters(argc, argv);
 
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
@@ -326,8 +329,10 @@ int main(int argc, char* argv[]) {
     size_t read;
 
     fp = fopen(parameters.infile, "r");
-    if (fp == NULL)
+    if (fp == NULL) {
+        printf("Input file not found.\n");
         exit(EXIT_FAILURE);
+    }
     
     int id = 1;
     while ((read = getline(&line, &len, fp)) != -1) {
