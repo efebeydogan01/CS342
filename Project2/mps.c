@@ -156,8 +156,8 @@ void selectQueue(BurstItem *item) {
         // find the queue with the least load
         for (int i = 0; i < parameters.N; i++) {
             int load = queues[i]->size;
-            if (queues[i]->size < minLoad) {
-                minLoad = queues[i]->size;
+            if (load < minLoad) {
+                minLoad = load;
                 qid = i;
             }
         } 
@@ -248,7 +248,12 @@ int main(int argc, char* argv[]) {
             i++;
             parameters.SAP = (strcmp(argv[i], "M") == 0) ? 0 : 1; 
             i++;
-            parameters.QS = (strcmp(argv[i], "RM") == 0) ? 0 : 1;
+            if (strcmp(argv[i], "RM") == 0)
+                parameters.QS = 0;
+            else if (strcmp(argv[i], "LM") == 0)
+                parameters.QS = 1;
+            else
+                parameters.QS = -1;
         }
         else if (strcmp(cur, "-s") == 0) {
             i++;
@@ -263,33 +268,34 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(cur, "-i") == 0) {
             i++;
-            parameters.infile = argv[i];
+            strcpy(parameters.infile, argv[i]);
+            // parameters.infile = argv[i];
         }
-        else if (strcmp(cur, "-m") == 0) {
-            i++;
-            parameters.outmode = atoi(argv[i]);
-        }
-        else if (strcmp(cur, "-o") == 0) {
-            i++;
-            parameters.outfile = argv[i];
-        }
-        else if (strcmp(cur, "-r") == 0) {
-            parameters.random = 1;
-            i++;
-            parameters.T = atoi(argv[i]);
-            i++;
-            parameters.T1 = atoi(argv[i]);
-            i++;
-            parameters.T2 = atoi(argv[i]);
-            i++;
-            parameters.L = atoi(argv[i]);
-            i++;
-            parameters.L1 = atoi(argv[i]);
-            i++;
-            parameters.L2 = atoi(argv[i]);
-            i++;
-            parameters.PC = atoi(argv[i]);
-        }
+    //     else if (strcmp(cur, "-m") == 0) {
+    //         i++;
+    //         parameters.outmode = atoi(argv[i]);
+    //     }
+    //     else if (strcmp(cur, "-o") == 0) {
+    //         i++;
+    //         parameters.outfile = argv[i];
+    //     }
+    //     else if (strcmp(cur, "-r") == 0) {
+    //         parameters.random = 1;
+    //         i++;
+    //         parameters.T = atoi(argv[i]);
+    //         i++;
+    //         parameters.T1 = atoi(argv[i]);
+    //         i++;
+    //         parameters.T2 = atoi(argv[i]);
+    //         i++;
+    //         parameters.L = atoi(argv[i]);
+    //         i++;
+    //         parameters.L1 = atoi(argv[i]);
+    //         i++;
+    //         parameters.L2 = atoi(argv[i]);
+    //         i++;
+    //         parameters.PC = atoi(argv[i]);
+    //     }
     }
 
     // if (!r && )
