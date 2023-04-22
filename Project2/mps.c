@@ -50,12 +50,11 @@ long getTimestamp() {
 }
 
 static void* schedule(void *param) {
-    int pid = (long) param;
+    int pid = (long) param; // id of the cpu
+    int qid = (parameters.SAP == M) ? (pid-1) : 0;
     BurstItem *burstItem;
 
     while (1) {
-        int qid = (parameters.SAP == M) ? pid : 0;
-
         pthread_mutex_lock(&lock[qid]);
         // SJF
         if (parameters.ALG == SJF) {
@@ -494,7 +493,7 @@ int main(int argc, char* argv[]) {
 
     // create N threads to simulate N processors
     for (long i = 0; i < parameters.N; i++) {
-        int err = pthread_create(&pid[i], NULL, schedule, (void *) i);
+        int err = pthread_create(&pid[i], NULL, schedule, (void *) (i+1));
         if (err) {
             printf("error occured: %d\n",  err);
             exit(1);
