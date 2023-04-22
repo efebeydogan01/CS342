@@ -210,11 +210,11 @@ void printBursts(BurstItem **bursts, int size) {
     int tt_sum = 0;
 
     // print the table
-    printf("%-6s%-6s%-8s%-8s%-8s%-8s%-8s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
+    printf("\n%-5s %-4s %-10s %-5s %-7s %-11s %-10s\n", "pid", "cpu", "burstlen", "arv", "finish", "waitingtime", "turnaround");
     for (int i = 0; i < size; i++) {
         item = bursts[i];
         tt_sum += item->turnaroundTime;
-        printf("%-6d%-6d%-8d%-8ld%-8ld%-8ld%-8ld\n", 
+        printf("%-5d %2d %7d %8ld %7ld %7ld %11ld\n", 
             item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
     }
 
@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
         .ALG = 0,
         .Q = 20,
         .infile = "in.txt",
-        .outmode = 3,//1,
+        .outmode = 2,//1,
         .outfile = "out.txt",
         .start_time = start_time
     };
