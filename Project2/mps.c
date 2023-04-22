@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <limits.h>
 #include <unistd.h>
+#include <math.h>
 #include "list.c"
 #define M 0
 #define S 1
@@ -219,6 +220,35 @@ void printBursts(BurstItem **bursts, int size) {
     printf("average turnaround time: %d\n", tt_sum / size);
 }
 
+int getRandomTime(int mean, int lower, int upper) {
+    double u, x;
+
+    while (1) {
+        u = (rand() % RAND_MAX) / (double) RAND_MAX;
+        x = -1 * log(1 - u) * mean;
+
+        if (x >= lower && x <= upper)
+            return x;
+    }
+    return -1;
+}
+
+BurstItem* generateBurstItem(int pid, int burstLength) {
+    BurstItem *burstItem = (BurstItem *) malloc(sizeof(BurstItem));
+    
+    *burstItem = (BurstItem) {
+        .pid = pid,
+        .burstLength = burstLength,
+        .arrivalTime = getTimestamp(),
+        .remainingTime = burstLength,
+        .finishTime = -1,
+        .turnaroundTime = -1,
+        .waitingTime = -1,
+        .processorID = -1
+    };
+    return burstItem;
+}
+
 void readParameters(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         char *cur = argv[i];
@@ -335,33 +365,43 @@ int main(int argc, char* argv[]) {
     }
     
     int id = 1;
-    while ((read = getline(&line, &len, fp)) != -1) {
-        char *token = strtok(line, " ");
-        if (strcmp(token, "PL") == 0) {
-            // get the burst time
-            token = strtok(NULL, " \n");
-            BurstItem *burstItem = (BurstItem *) malloc(sizeof(BurstItem));
-            burstItem->pid = id;
-            burstItem->burstLength = atoi(token);
-            burstItem->arrivalTime = getTimestamp();
-            burstItem->remainingTime = atoi(token);
-            burstItem->finishTime = -1;
-            burstItem->turnaroundTime = -1;
-            burstItem->waitingTime = -1;
-            burstItem->processorID = -1;
 
-            id++;
-            selectQueue(burstItem);
+    if (parameters.random == 0) {
+        // read from file
+        while ((read = getline(&line, &len, fp)) != -1) {
+            char *token = strtok(line, " ");
+            if (strcmp(token, "PL") == 0) {
+                // get the burst time
+                token = strtok(NULL, " \n");
+                BurstItem *burstItem = generateBurstItem(id, atoi(token));
+                id++;
+                selectQueue(burstItem);
+            }
+            else if (strcmp(token, "IAT") == 0) {
+                // get the interarrival time for sleep
+                token = strtok(NULL, " \n");
+                usleep(atoi(token) * 1000);
+            }
         }
-        else if (strcmp(token, "IAT") == 0) {
-            token = strtok(NULL, " \n");
-            int sleepTime = atoi(token) * 1000;
-            usleep(sleepTime);
+        fclose(fp);
+        if (line) free(line);
+    }
+    else {
+        // generate random bursts and interarrival times
+        BurstItem *burstItem;
+        int burstLength, interarrivalTime;
+
+        for (int id = 1; id <= parameters.PC; id++) {
+            burstLength = getRandomTime(parameters.L, parameters.L1, parameters.L2);
+            burstItem = generateBurstItem(id, burstLength);
+            selectQueue(burstItem);
+
+            if (id != parameters.PC) {
+                interarrivalTime = getRandomTime(parameters.T, parameters.T1, parameters.T2);
+                usleep(interarrivalTime * 1000);
+            }
         }
     }
-    fclose(fp);
-    if (line)
-        free(line);
 
     // add dummy items to the end of every queue
     addDummyItem();
