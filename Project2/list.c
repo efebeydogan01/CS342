@@ -8,11 +8,11 @@
 typedef struct BurstItem {
     int pid;
     int burstLength;
-    float arrivalTime;
+    long arrivalTime;
     int remainingTime;
-    float finishTime;
-    float turnaroundTime;
-    float waitingTime;
+    long finishTime;
+    long turnaroundTime;
+    long waitingTime;
     int processorID;
 } BurstItem;
 

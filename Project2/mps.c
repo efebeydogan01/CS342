@@ -34,13 +34,17 @@ pthread_mutex_t *lock;
 list *finishedBursts;
 pthread_mutex_t finishedLock;
 
-float getTimestamp() {
+long getTimestamp() {
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
-    // return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000;
+    //return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000.0;
     // return ((1000000.0 * current_time.tv_sec) + current_time.tv_usec) - ((1000000.0 * parameters.start_time.tv_sec) + parameters.start_time.tv_usec);
     // return (current_time.tv_sec - parameters.start_time.tv_sec) + ((current_time.tv_usec - parameters.start_time.tv_usec)/1000000.0);
-    return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000.0) - (parameters.start_time.tv_sec * 1000 + parameters.start_time.tv_usec / 1000.0);
+    // return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000.0) - (parameters.start_time.tv_sec * 1000 + parameters.start_time.tv_usec / 1000.0);
+
+    long seconds = current_time.tv_sec - parameters.start_time.tv_sec;
+    long useconds = current_time.tv_usec - parameters.start_time.tv_usec;
+    return ((seconds) * 1000 + useconds / 1000.0);
 }
 
 static void* schedule(void *param) {
@@ -80,7 +84,7 @@ static void* schedule(void *param) {
                 burstDuration = parameters.Q;
 
             if (parameters.outmode == 2)
-                printf("time=%f, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+                printf("time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
             else if (parameters.outmode == 3) 
                 printf("Burst with id %d is selected to run in CPU with id %d\n", burstItem->pid, pid);
 
@@ -107,7 +111,7 @@ static void* schedule(void *param) {
                 burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
 
                 if (parameters.outmode == 3)
-                    printf("Burst with id %d has finished its burst. (finish time: %f, turnaround time: %f, waiting time: %f)\n", burstItem->pid, burstItem->finishTime, 
+                    printf("Burst with id %d has finished its burst. (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", burstItem->pid, burstItem->finishTime, 
                         burstItem->turnaroundTime, burstItem->waitingTime);
 
                 pthread_mutex_lock(&finishedLock);
@@ -210,7 +214,7 @@ void printBursts(BurstItem **bursts, int size) {
     for (int i = 0; i < size; i++) {
         item = bursts[i];
         tt_sum += item->turnaroundTime;
-        printf("%-6d%-6d%-8d%-8d%-8d%-8d%-8d\n", 
+        printf("%-6d%-6d%-8d%-8ld%-8ld%-8ld%-8ld\n", 
             item->pid, item->processorID, item->burstLength, item->arrivalTime, item->finishTime, item->waitingTime, item->turnaroundTime);
     }
 
