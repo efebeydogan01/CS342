@@ -37,10 +37,6 @@ pthread_mutex_t finishedLock;
 long getTimestamp() {
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
-    //return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000.0;
-    // return ((1000000.0 * current_time.tv_sec) + current_time.tv_usec) - ((1000000.0 * parameters.start_time.tv_sec) + parameters.start_time.tv_usec);
-    // return (current_time.tv_sec - parameters.start_time.tv_sec) + ((current_time.tv_usec - parameters.start_time.tv_usec)/1000000.0);
-    // return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000.0) - (parameters.start_time.tv_sec * 1000 + parameters.start_time.tv_usec / 1000.0);
 
     long seconds = current_time.tv_sec - parameters.start_time.tv_sec;
     long useconds = current_time.tv_usec - parameters.start_time.tv_usec;
@@ -228,9 +224,9 @@ int main(int argc, char* argv[]) {
 
     parameters = (Parameters) {
         .N = 2,
-        .SAP = 0,
-        .QS = 0,
-        .ALG = 0,
+        .SAP = M,
+        .QS = RM,
+        .ALG = RR,
         .Q = 20,
         .infile = "in.txt",
         .outmode = 2,//1,
