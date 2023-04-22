@@ -68,6 +68,9 @@ static void* schedule(void *param) {
             if (parameters.SAP == S && parameters.N > 1) {
                 enqueue(queues[qid], burstItem);
             }
+            else {
+                free(burstItem);
+            }
             pthread_exit(NULL);
         }
 
@@ -181,10 +184,7 @@ void addDummyItem() {
     // single queue
     if (parameters.SAP == S) {
         pthread_mutex_lock(&lock[0]);
-        BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
-        // dummy item
-        item->pid = DUMMY_ID;
-        enqueue(queues[0], item);
+        enqueue(queues[0], createDummyItem());
         pthread_mutex_unlock(&lock[0]);
     }
     else {
@@ -326,7 +326,7 @@ int main(int argc, char* argv[]) {
         .random = 0,
         .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
         .infile = "in.txt",
-        .outmode = 2,//1,
+        .outmode = 1,//1,
         .outfile = "",
         .start_time = start_time
     };
@@ -336,7 +336,18 @@ int main(int argc, char* argv[]) {
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
+    for (int i = 0; i < queueCount; i++) {
+        int mut = pthread_mutex_init(&lock[i], NULL);
+        if (mut) {
+            printf("couldn't initialize lock");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     finishedBursts = (list *) malloc(sizeof(list));
+    finishedBursts->head = NULL;
+    finishedBursts->tail = NULL;
+    finishedBursts->size = 0;
     pthread_t pid[parameters.N];
 
     for (int i = 0; i < queueCount; i++) {
@@ -424,9 +435,9 @@ int main(int argc, char* argv[]) {
     free(queues);
     free(lock);
     
-    for (int i = 0; i < finishedBursts->size; i++) {
-        free(sortedBursts[i]);
-    }
+    // for (int i = 0; i < finishedBursts->size; i++) {
+    //     free(sortedBursts[i]);
+    // }
     free(sortedBursts);
-    // freeList(finishedBursts);
+    freeList(finishedBursts);
 }

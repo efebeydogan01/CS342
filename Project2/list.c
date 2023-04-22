@@ -79,8 +79,9 @@ void enqueue(list *lst, BurstItem *item) {
 
         tail->next = (node_t *) malloc(sizeof(node_t));
         if (isDummy(tail->item)) {
+            BurstItem *dummy = tail->item;
             tail->item = item;
-            tail->next->item = createDummyItem();
+            tail->next->item = dummy;
         }
         else {
             tail->next->item = item;
@@ -145,7 +146,7 @@ int sortHelper(const void *a, const void *b) {
 }
 
 BurstItem** sort(list *finishedBursts) {
-    BurstItem **bursts = (BurstItem **) malloc(sizeof(BurstItem *) * finishedBursts->size);
+    BurstItem **bursts = (BurstItem **) calloc(finishedBursts->size, sizeof(BurstItem *));
     node_t *cur = finishedBursts->head;
     int i = 0;
     while (cur) {
@@ -153,7 +154,6 @@ BurstItem** sort(list *finishedBursts) {
         i++;
         cur = cur->next;
     }
-
     qsort(bursts, finishedBursts->size, sizeof(BurstItem *), sortHelper);
     return bursts;
 }
