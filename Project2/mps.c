@@ -22,6 +22,8 @@ typedef struct Parameters {
     int QS;   // RM:0, LM:1, NA:-1 
     int ALG;  // RR:0, FCFS:1, SJF:2
     int Q;
+    int random;
+    int T, T1, T2, L, L1, L2, PC;
     char *infile;
     int outmode;
     char *outfile;
@@ -228,9 +230,11 @@ int main(int argc, char* argv[]) {
         .QS = RM,
         .ALG = RR,
         .Q = 20,
+        .random = 0,
+        .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
         .infile = "in.txt",
         .outmode = 2,//1,
-        .outfile = "out.txt",
+        .outfile = "",
         .start_time = start_time
     };
 
