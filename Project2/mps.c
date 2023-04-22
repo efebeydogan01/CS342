@@ -229,15 +229,6 @@ int main(int argc, char* argv[]) {
         .outfile = "out.txt"
     };
 
-    // BurstItem *item = (BurstItem *) malloc(sizeof(BurstItem));
-    // item->pid = 31;
-    // list *lst = initializeList(item);
-    // enqueue(lst, item);
-    // dequeue(&lst);
-    // dequeue(&lst);
-    // dequeue(&lst);
-    // print_list(lst);
-
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
