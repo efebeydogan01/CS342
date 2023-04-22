@@ -366,9 +366,16 @@ int main(int argc, char* argv[]) {
     BurstItem** sortedBursts = sort(finishedBursts);
     printBursts(sortedBursts, finishedBursts->size);
 
+    // free all of the allocated memory
     for (int i = 0; i < queueCount; i++) {
-        for(int j = 0; j < queues[i]->size; i++) {
-            
-        }
+        freeList(queues[i]);
     }
+    free(queues);
+    free(lock);
+    
+    for (int i = 0; i < finishedBursts->size; i++) {
+        free(sortedBursts[i]);
+    }
+    free(sortedBursts);
+    // freeList(finishedBursts);
 }

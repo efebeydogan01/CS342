@@ -159,7 +159,6 @@ BurstItem** sort(list *finishedBursts) {
 }
 
 void freeList(list *lst) {
-    node_t *curNode = lst->head;
     while (lst->size) {
         BurstItem *cur = dequeue(lst);
         free(cur);
