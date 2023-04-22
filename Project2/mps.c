@@ -40,10 +40,6 @@ pthread_mutex_t finishedLock;
 long getTimestamp() {
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
-    //return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000.0;
-    // return ((1000000.0 * current_time.tv_sec) + current_time.tv_usec) - ((1000000.0 * parameters.start_time.tv_sec) + parameters.start_time.tv_usec);
-    // return (current_time.tv_sec - parameters.start_time.tv_sec) + ((current_time.tv_usec - parameters.start_time.tv_usec)/1000000.0);
-    // return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000.0) - (parameters.start_time.tv_sec * 1000 + parameters.start_time.tv_usec / 1000.0);
 
     long seconds = current_time.tv_sec - parameters.start_time.tv_sec;
     long useconds = current_time.tv_usec - parameters.start_time.tv_usec;
@@ -161,8 +157,8 @@ void selectQueue(BurstItem *item) {
         // find the queue with the least load
         for (int i = 0; i < parameters.N; i++) {
             int load = queues[i]->size;
-            if (queues[i]->size < minLoad) {
-                minLoad = queues[i]->size;
+            if (load < minLoad) {
+                minLoad = load;
                 qid = i;
             }
         } 
@@ -260,9 +256,9 @@ int main(int argc, char* argv[]) {
 
     parameters = (Parameters) {
         .N = 2,
-        .SAP = 0,
-        .QS = 0,
-        .ALG = 0,
+        .SAP = M,
+        .QS = RM,
+        .ALG = RR,
         .Q = 20,
         .random = 1,
         .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
@@ -271,6 +267,68 @@ int main(int argc, char* argv[]) {
         .outfile = "",
         .start_time = start_time
     };
+
+    for (int i = 1; i < argc; i++) {
+        char *cur = argv[i];
+        if (strcmp(cur, "-n") == 0) {
+            i++;
+            parameters.N = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-a") == 0) {
+            i++;
+            parameters.SAP = (strcmp(argv[i], "M") == 0) ? 0 : 1; 
+            i++;
+            if (strcmp(argv[i], "RM") == 0)
+                parameters.QS = 0;
+            else if (strcmp(argv[i], "LM") == 0)
+                parameters.QS = 1;
+            else
+                parameters.QS = -1;
+        }
+        else if (strcmp(cur, "-s") == 0) {
+            i++;
+            if (strcmp(argv[i], "FCFS") == 0)
+                parameters.ALG =  1;
+            else if (strcmp(argv[i], "SJF") == 0)
+                parameters.ALG = 2;
+            else
+                parameters.ALG = 0;
+            i++;
+            parameters.Q = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-i") == 0) {
+            i++;
+            strcpy(parameters.infile, argv[i]);
+            // parameters.infile = argv[i];
+        }
+    //     else if (strcmp(cur, "-m") == 0) {
+    //         i++;
+    //         parameters.outmode = atoi(argv[i]);
+    //     }
+    //     else if (strcmp(cur, "-o") == 0) {
+    //         i++;
+    //         parameters.outfile = argv[i];
+    //     }
+    //     else if (strcmp(cur, "-r") == 0) {
+    //         parameters.random = 1;
+    //         i++;
+    //         parameters.T = atoi(argv[i]);
+    //         i++;
+    //         parameters.T1 = atoi(argv[i]);
+    //         i++;
+    //         parameters.T2 = atoi(argv[i]);
+    //         i++;
+    //         parameters.L = atoi(argv[i]);
+    //         i++;
+    //         parameters.L1 = atoi(argv[i]);
+    //         i++;
+    //         parameters.L2 = atoi(argv[i]);
+    //         i++;
+    //         parameters.PC = atoi(argv[i]);
+    //     }
+    }
+
+    // if (!r && )
 
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
@@ -353,4 +411,17 @@ int main(int argc, char* argv[]) {
 
     BurstItem** sortedBursts = sort(finishedBursts);
     printBursts(sortedBursts, finishedBursts->size);
+
+    // free all of the allocated memory
+    for (int i = 0; i < queueCount; i++) {
+        freeList(queues[i]);
+    }
+    free(queues);
+    free(lock);
+    
+    for (int i = 0; i < finishedBursts->size; i++) {
+        free(sortedBursts[i]);
+    }
+    free(sortedBursts);
+    // freeList(finishedBursts);
 }
