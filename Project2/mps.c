@@ -306,7 +306,7 @@ void readParameters(int argc, char* argv[]) {
         }
     }
 
-    // if (!r && )
+    // condition for when neither i nor r is supplied
 }
 
 int main(int argc, char* argv[]) {
@@ -329,6 +329,28 @@ int main(int argc, char* argv[]) {
     };
 
     readParameters(argc, argv);
+
+    if (parameters.outmode == 3) {
+        printf("Number of processors in simulation: %d\n", parameters.N);
+        if (parameters.SAP == 1)
+            printf("single-queue approach\n");
+        else if (parameters.SAP == 0 && parameters.QS == 0)
+            printf("multi-queue approach with round robin method\n");
+        else
+            printf("multi-queue approach with load-balancing method\n");
+        
+        if (parameters.ALG == 0)
+            printf("Scheduling algorithm: RR with time quantum %d ms\n", parameters.Q);
+        else if (parameters.ALG == 1)
+            printf("Scheduling algorithm: FCFS\n");
+        else
+            printf("Scheduling algorithm: SJF\n");
+        
+        if (parameters.random == 1) {
+            printf("Bursts and interarrival times will be created randomly with parameters:\n");
+            printf("T=%d, T1=%d, T2=%d, L=%d, L1=%d, L2=%d, PC=%d\n", parameters.T, parameters.T1, parameters.T2, parameters.L, parameters.L1, parameters.L2, parameters.PC);
+        }
+    }
 
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
