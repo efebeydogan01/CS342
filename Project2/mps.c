@@ -238,6 +238,62 @@ int main(int argc, char* argv[]) {
         .start_time = start_time
     };
 
+    for (int i = 1; i < argc; i++) {
+        char *cur = argv[i];
+        if (strcmp(cur, "-n") == 0) {
+            i++;
+            parameters.N = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-a") == 0) {
+            i++;
+            parameters.SAP = (strcmp(argv[i], "M") == 0) ? 0 : 1; 
+            i++;
+            parameters.QS = (strcmp(argv[i], "RM") == 0) ? 0 : 1;
+        }
+        else if (strcmp(cur, "-s") == 0) {
+            i++;
+            if (strcmp(argv[i], "FCFS") == 0)
+                parameters.ALG =  1;
+            else if (strcmp(argv[i], "SJF") == 0)
+                parameters.ALG = 2;
+            else
+                parameters.ALG = 0;
+            i++;
+            parameters.Q = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-i") == 0) {
+            i++;
+            parameters.infile = argv[i];
+        }
+        else if (strcmp(cur, "-m") == 0) {
+            i++;
+            parameters.outmode = atoi(argv[i]);
+        }
+        else if (strcmp(cur, "-o") == 0) {
+            i++;
+            parameters.outfile = argv[i];
+        }
+        else if (strcmp(cur, "-r") == 0) {
+            parameters.random = 1;
+            i++;
+            parameters.T = atoi(argv[i]);
+            i++;
+            parameters.T1 = atoi(argv[i]);
+            i++;
+            parameters.T2 = atoi(argv[i]);
+            i++;
+            parameters.L = atoi(argv[i]);
+            i++;
+            parameters.L1 = atoi(argv[i]);
+            i++;
+            parameters.L2 = atoi(argv[i]);
+            i++;
+            parameters.PC = atoi(argv[i]);
+        }
+    }
+
+    // if (!r && )
+
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
@@ -309,4 +365,10 @@ int main(int argc, char* argv[]) {
 
     BurstItem** sortedBursts = sort(finishedBursts);
     printBursts(sortedBursts, finishedBursts->size);
+
+    for (int i = 0; i < queueCount; i++) {
+        for(int j = 0; j < queues[i]->size; i++) {
+            
+        }
+    }
 }

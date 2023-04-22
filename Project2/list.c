@@ -36,7 +36,7 @@ list* createList() {
 }
 
 void print_list(list *lst) {
-    node_t * current = lst->head;
+    node_t *current = lst->head;
 
     while (current != NULL) {
         printf("%d\n", current->item->pid);
@@ -156,4 +156,13 @@ BurstItem** sort(list *finishedBursts) {
 
     qsort(bursts, finishedBursts->size, sizeof(BurstItem *), sortHelper);
     return bursts;
+}
+
+void freeList(list *lst) {
+    node_t *curNode = lst->head;
+    while (lst->size) {
+        BurstItem *cur = dequeue(lst);
+        free(cur);
+    }
+    free(lst);
 }
