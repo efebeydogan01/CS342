@@ -34,10 +34,13 @@ pthread_mutex_t *lock;
 list *finishedBursts;
 pthread_mutex_t finishedLock;
 
-int getTimestamp() {
+float getTimestamp() {
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
-    return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000;
+    // return (current_time.tv_usec - parameters.start_time.tv_usec) / 1000;
+    // return ((1000000.0 * current_time.tv_sec) + current_time.tv_usec) - ((1000000.0 * parameters.start_time.tv_sec) + parameters.start_time.tv_usec);
+    // return (current_time.tv_sec - parameters.start_time.tv_sec) + ((current_time.tv_usec - parameters.start_time.tv_usec)/1000000.0);
+    return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000.0) - (parameters.start_time.tv_sec * 1000 + parameters.start_time.tv_usec / 1000.0);
 }
 
 static void* schedule(void *param) {
@@ -77,7 +80,7 @@ static void* schedule(void *param) {
                 burstDuration = parameters.Q;
 
             if (parameters.outmode == 2)
-                printf("time=%d, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+                printf("time=%f, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
             else if (parameters.outmode == 3) 
                 printf("Burst with id %d is selected to run in CPU with id %d\n", burstItem->pid, pid);
 
@@ -88,7 +91,7 @@ static void* schedule(void *param) {
             // re-enqueue for RR
             if (parameters.ALG == RR && burstItem->remainingTime > 0) {
                 if (parameters.outmode == 3) 
-                    printf("Burst with id %d is added to the end of the queue after time sliced expired (round-robin scheduling, remaining time: %d)\n", burstItem->pid, burstItem->remainingTime);
+                    printf("Burst with id %d is added to the end of the queue after time slice expired (round-robin scheduling, remaining time: %d)\n", burstItem->pid, burstItem->remainingTime);
                 
                 pthread_mutex_lock(&lock[qid]);
                 enqueue(queues[qid], burstItem);
@@ -104,7 +107,7 @@ static void* schedule(void *param) {
                 burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
 
                 if (parameters.outmode == 3)
-                    printf("Burst with id %d has finished its burst. (finish time: %d, turnaround time: %d, waiting time: %d)\n", burstItem->pid, burstItem->finishTime, 
+                    printf("Burst with id %d has finished its burst. (finish time: %f, turnaround time: %f, waiting time: %f)\n", burstItem->pid, burstItem->finishTime, 
                         burstItem->turnaroundTime, burstItem->waitingTime);
 
                 pthread_mutex_lock(&finishedLock);
@@ -264,7 +267,6 @@ int main(int argc, char* argv[]) {
         if (strcmp(token, "PL") == 0) {
             // get the burst time
             token = strtok(NULL, " \n");
-            //printf("burst time: %s\n", token);
             BurstItem *burstItem = (BurstItem *) malloc(sizeof(BurstItem));
             burstItem->pid = id;
             burstItem->burstLength = atoi(token);

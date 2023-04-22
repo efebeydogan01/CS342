@@ -8,11 +8,11 @@
 typedef struct BurstItem {
     int pid;
     int burstLength;
-    int arrivalTime;
+    float arrivalTime;
     int remainingTime;
-    int finishTime;
-    int turnaroundTime;
-    int waitingTime;
+    float finishTime;
+    float turnaroundTime;
+    float waitingTime;
     int processorID;
 } BurstItem;
 
@@ -104,7 +104,6 @@ BurstItem* dequeue(list *lst) {
     lst->head = next_node;
     lst->size--;
     free(head);
-    printf("%d", retval->pid);
     return retval;
 }
 
