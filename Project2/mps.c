@@ -430,7 +430,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // open the outout file if flag is given
+    // open the output file if flag is given
     if (parameters.outFlag) {
         optr = fopen(parameters.outfile, "w");
         if (!optr) {
