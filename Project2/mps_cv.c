@@ -40,6 +40,7 @@ list *finishedBursts;
 pthread_mutex_t finishedLock;
 pthread_mutex_t outfileLock;
 FILE *optr;
+pthread_cond_t *cv;
 
 long getTimestamp() {
     struct timeval current_time;
@@ -57,6 +58,10 @@ static void* schedule(void *param) {
 
     while (1) {
         pthread_mutex_lock(&lock[qid]);
+        // sleep while the queue is empty
+        while (isEmpty(queues[qid])) {
+            pthread_cond_wait(&cv[qid], &lock[qid]);
+        }
         // SJF
         if (parameters.ALG == SJF) {
             burstItem = dequeueShortest(queues[qid]);
@@ -70,6 +75,7 @@ static void* schedule(void *param) {
             // read the dummy item for other threads to terminate
             if (parameters.SAP == S && parameters.N > 1) {
                 enqueue(queues[qid], burstItem);
+                pthread_cond_signal(&cv[0]);
             }
             else {
                 free(burstItem);
@@ -90,80 +96,75 @@ static void* schedule(void *param) {
 
         pthread_mutex_unlock(&lock[qid]);
 
-        if (!burstItem) {
-            usleep(1000);
-        }
         // compute the burst duration to sleep
-        else {
-            int burstDuration = burstItem->remainingTime;
-            if (parameters.ALG == RR && parameters.Q < burstDuration)
-                burstDuration = parameters.Q;
+        int burstDuration = burstItem->remainingTime;
+        if (parameters.ALG == RR && parameters.Q < burstDuration)
+            burstDuration = parameters.Q;
 
-            if (parameters.outmode == 2) {
-                if (parameters.outFlag) {
-                    pthread_mutex_lock(&outfileLock);
-                    fprintf(optr, "time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
-                    pthread_mutex_unlock(&outfileLock);
-                }
-                else 
-                    printf("time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+        if (parameters.outmode == 2) {
+            if (parameters.outFlag) {
+                pthread_mutex_lock(&outfileLock);
+                fprintf(optr, "time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+                pthread_mutex_unlock(&outfileLock);
             }
-            else if (parameters.outmode == 3) {
-                if (parameters.outFlag) {
-                    pthread_mutex_lock(&outfileLock);
-                    fprintf(optr, "t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
-                    pthread_mutex_unlock(&outfileLock);
-                }
-                else 
-                    printf("t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+            else 
+                printf("time=%ld, cpu=%d, pid=%d, burstlen=%d, remainingtime=%d\n", getTimestamp(), burstItem->processorID, burstItem->pid, burstItem->burstLength, burstItem->remainingTime);
+        }
+        else if (parameters.outmode == 3) {
+            if (parameters.outFlag) {
+                pthread_mutex_lock(&outfileLock);
+                fprintf(optr, "t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                pthread_mutex_unlock(&outfileLock);
             }
-
-            // simulate cpu burst (by sleeping)
-            usleep(burstDuration * 1000);
-
-            burstItem->remainingTime -= burstDuration;
-
-            // re-enqueue for RR
-            if (parameters.ALG == RR && burstItem->remainingTime > 0) {
-                if (parameters.outmode == 3) {
-                    if (parameters.outFlag) {
-                        pthread_mutex_lock(&outfileLock);
-                        fprintf(optr, "t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
-                        pthread_mutex_unlock(&outfileLock);
-                    }
-                    else
-                        printf("t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
-                }
-
-                pthread_mutex_lock(&lock[qid]);
-                enqueue(queues[qid], burstItem);
-                pthread_mutex_unlock(&lock[qid]);
-
-            }
-            // compute times and add item to finished bursts
-            else if (burstItem->remainingTime == 0) {
-                burstItem->finishTime = getTimestamp();
-                burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
-                burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
-
-                if (parameters.outmode == 3) {
-                    if (parameters.outFlag) {
-                        pthread_mutex_lock(&outfileLock);
-                        fprintf(optr, "t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
-                        burstItem->turnaroundTime, burstItem->waitingTime);
-                        pthread_mutex_unlock(&outfileLock);
-                    }
-                    else
-                        printf("t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
-                        burstItem->turnaroundTime, burstItem->waitingTime);
-                }
-
-                pthread_mutex_lock(&finishedLock);
-                enqueue(finishedBursts, burstItem);
-                pthread_mutex_unlock(&finishedLock);
-            }
+            else 
+                printf("t=%-5ld\tpid=%-2d--selected--> cpu=%-2d \t\t (burstlen=%d, remainingtime=%d)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
         }
 
+        // simulate cpu burst (by sleeping)
+        usleep(burstDuration * 1000);
+
+        burstItem->remainingTime -= burstDuration;
+
+        // re-enqueue for RR
+        if (parameters.ALG == RR && burstItem->remainingTime > 0) {
+            if (parameters.outmode == 3) {
+                if (parameters.outFlag) {
+                    pthread_mutex_lock(&outfileLock);
+                    fprintf(optr, "t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+                    pthread_mutex_unlock(&outfileLock);
+                }
+                else
+                    printf("t=%-5ld\tpid=%-2d--time slice expired-- cpu=%-2d \t (burstlen=%d, remainingtime=%d, getting re-enqueued)\n", getTimestamp(), burstItem->pid, pid, burstItem->burstLength, burstItem->remainingTime);
+            }
+
+            pthread_mutex_lock(&lock[qid]);
+            enqueue(queues[qid], burstItem);
+            pthread_cond_signal(&cv[qid]);
+            pthread_mutex_unlock(&lock[qid]);
+
+        }
+        // compute times and add item to finished bursts
+        else if (burstItem->remainingTime == 0) {
+            burstItem->finishTime = getTimestamp();
+            burstItem->turnaroundTime = burstItem->finishTime - burstItem->arrivalTime;
+            burstItem->waitingTime = burstItem->turnaroundTime - burstItem->burstLength;
+
+            if (parameters.outmode == 3) {
+                if (parameters.outFlag) {
+                    pthread_mutex_lock(&outfileLock);
+                    fprintf(optr, "t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
+                    burstItem->turnaroundTime, burstItem->waitingTime);
+                    pthread_mutex_unlock(&outfileLock);
+                }
+                else
+                    printf("t=%-5ld\tpid=%-2d--finished-- cpu=%-2d \t\t (finish time: %ld, turnaround time: %ld, waiting time: %ld)\n", getTimestamp(), burstItem->pid, pid, burstItem->finishTime, 
+                    burstItem->turnaroundTime, burstItem->waitingTime);
+            }
+
+            pthread_mutex_lock(&finishedLock);
+            enqueue(finishedBursts, burstItem);
+            pthread_mutex_unlock(&finishedLock);
+        }
     }
 }
 
@@ -173,6 +174,7 @@ void selectQueue(BurstItem *item) {
         pthread_mutex_lock(&lock[0]);
         item->processorID = 1;
         enqueue(queues[0], item);
+        pthread_cond_signal(&cv[0]);
         pthread_mutex_unlock(&lock[0]);
 
         if (parameters.outmode == 3) {
@@ -191,6 +193,7 @@ void selectQueue(BurstItem *item) {
         pthread_mutex_lock(&lock[qid]);
         item->processorID = qid + 1;
         enqueue(queues[qid], item);
+        pthread_cond_signal(&cv[qid]);
         if (parameters.outmode == 3) {
             if (parameters.outFlag) {
                 pthread_mutex_lock(&outfileLock);
@@ -223,6 +226,7 @@ void selectQueue(BurstItem *item) {
 
         item->processorID = qid + 1;
         enqueue(queues[qid], item);
+        pthread_cond_signal(&cv[qid]);
         if (parameters.outmode == 3)  {
             if (parameters.outFlag) {
                 pthread_mutex_lock(&outfileLock);
@@ -244,6 +248,7 @@ void addDummyItem() {
     if (parameters.SAP == S) {
         pthread_mutex_lock(&lock[0]);
         enqueue(queues[0], createDummyItem());
+        pthread_cond_signal(&cv[0]);
         pthread_mutex_unlock(&lock[0]);
     }
     else {
@@ -254,6 +259,7 @@ void addDummyItem() {
         
         for (int i = 0; i < parameters.N; i++) {
             enqueue(queues[i], createDummyItem());
+            pthread_cond_signal(&cv[i]);
         } 
 
         // release all locks
@@ -414,6 +420,7 @@ int main(int argc, char* argv[]) {
     int queueCount = (parameters.SAP == M) ? parameters.N : 1;
     queues = (list **) malloc(sizeof(list*) * queueCount);
     lock = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * queueCount);
+    cv = (pthread_cond_t *) malloc(sizeof(pthread_cond_t) * queueCount);
 
     if (pthread_mutex_init(&finishedLock, NULL)) {
         printf("couldn't initialize finished lock");
@@ -427,6 +434,13 @@ int main(int argc, char* argv[]) {
         int mut = pthread_mutex_init(&lock[i], NULL);
         if (mut) {
             printf("couldn't initialize queue lock");
+            exit(EXIT_FAILURE);
+        }
+    }
+    for (int i = 0; i < queueCount; i++) {
+        int mut = pthread_cond_init(&cv[i], NULL);
+        if (mut) {
+            printf("couldn't initialize condition variable");
             exit(EXIT_FAILURE);
         }
     }
@@ -580,6 +594,7 @@ int main(int argc, char* argv[]) {
     }
     free(queues);
     free(lock);
+    free(cv);
     
     // for (int i = 0; i < finishedBursts->size; i++) {
     //     free(sortedBursts[i]);
