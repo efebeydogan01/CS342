@@ -26,7 +26,7 @@ typedef struct Parameters {
     int random;
     int T, T1, T2, L, L1, L2, PC;
     char *infile;
-    char inFlag;
+    int inFlag;
     int outmode;
     char *outfile;
     int outFlag;
@@ -411,7 +411,7 @@ int main(int argc, char* argv[]) {
         .T = 200, .T1 = 10, .T2 = 1000, .L = 100, .L1 = 10, .L2 = 500, .PC = 10,
         .infile = "",
         .inFlag = 0,
-        .outmode = 1,//1,
+        .outmode = 1,
         .outfile = "",
         .start_time = start_time,
         .outFlag = 0
