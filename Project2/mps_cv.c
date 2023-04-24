@@ -96,6 +96,8 @@ static void* schedule(void *param) {
 
         pthread_mutex_unlock(&lock[qid]);
 
+        if (parameters.ALG == RR && parameters.SAP == S)
+                burstItem->processorID = pid;
         // compute the burst duration to sleep
         int burstDuration = burstItem->remainingTime;
         if (parameters.ALG == RR && parameters.Q < burstDuration)

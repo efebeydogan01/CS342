@@ -95,6 +95,8 @@ static void* schedule(void *param) {
         }
         // compute the burst duration to sleep
         else {
+            if (parameters.ALG == RR && parameters.SAP == S)
+                burstItem->processorID = pid;
             int burstDuration = burstItem->remainingTime;
             if (parameters.ALG == RR && parameters.Q < burstDuration)
                 burstDuration = parameters.Q;
