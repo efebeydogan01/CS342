@@ -65,7 +65,7 @@ BurstItem* createDummyItem() {
 }
 
 void enqueue(list *lst, BurstItem *item) {
-    if (!lst) return;
+    if (!lst || !item) return;
 
     if (!lst->head) {
         node_t *head = (node_t *) malloc(sizeof(node_t));
@@ -120,7 +120,7 @@ BurstItem* dequeueShortest(list *lst) {
 
     while (cur) {
         // item not dummy and is a better candidate for the shortest 
-        if (cur->item->pid != DUMMY_ID && cur->item->remainingTime < curTime) {
+        if (!isDummy(cur->item) && cur->item->remainingTime < curTime) {
             dq_prev = cur_prev;
             dq = cur;
         }
