@@ -104,6 +104,9 @@ BurstItem* dequeue(list *lst) {
     retval = head->item;
     lst->head = next_node;
     lst->size--;
+    if (lst->size == 0) {
+        lst->tail = lst->head;
+    }
     free(head);
     return retval;
 }
@@ -132,8 +135,15 @@ BurstItem* dequeueShortest(list *lst) {
         return dequeue(lst);
     }
     dq_prev->next = dq->next;
+    // if the element being dequeued is the last element in the queue
+    if (!dq->next) {
+        lst->tail = dq_prev;
+    }
     BurstItem *retval = dq->item;
     lst->size--;
+    if (lst->size == 0) {
+        lst->tail = NULL;
+    }
     free(dq);
     return retval;
 }
