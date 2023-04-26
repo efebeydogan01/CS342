@@ -758,11 +758,11 @@ int main(int argc, char* argv[]) {
         freeList(queues[i]);
     }
     free(queues);
+    // destroy the locks
+    for (int i = 0; i < queueCount; i++)
+        pthread_mutex_destroy(&lock[i]);
     free(lock);
-    
-    // for (int i = 0; i < finishedBursts->size; i++) {
-    //     free(sortedBursts[i]);
-    // }
+
     free(sortedBursts);
     freeList(finishedBursts);
 

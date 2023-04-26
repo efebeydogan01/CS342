@@ -772,12 +772,14 @@ int main(int argc, char* argv[]) {
         freeList(queues[i]);
     }
     free(queues);
+    // destroy the locks and condition variables
+    for (int i = 0; i < queueCount; i++) {
+        pthread_mutex_destroy(&lock[i]);
+        pthread_cond_destroy(&cv[i]);
+    }
     free(lock);
     free(cv);
     
-    // for (int i = 0; i < finishedBursts->size; i++) {
-    //     free(sortedBursts[i]);
-    // }
     free(sortedBursts);
     freeList(finishedBursts);
 
