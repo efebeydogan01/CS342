@@ -400,6 +400,8 @@ int main(int argc, char* argv[]) {
     // get the start time of the program
     struct timeval start_time;
     gettimeofday(&start_time, NULL);
+    
+    srand(time(NULL));
 
     parameters = (Parameters) {
         .N = 2,

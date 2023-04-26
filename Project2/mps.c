@@ -395,6 +395,8 @@ int main(int argc, char* argv[]) {
     struct timeval start_time;
     gettimeofday(&start_time, NULL);
 
+    srand(time(NULL));
+
     parameters = (Parameters) {
         .N = 2,
         .SAP = M,
