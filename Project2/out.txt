@@ -1,299 +1,43 @@
-Number of processors in simulation: 8
-multi-queue approach with round robin method
-Scheduling algorithm: RR with time quantum 20 ms
-Bursts and interarrival times will be read from an input file with name: in1.txt
-t=0    	pid=1 --enqueued--> queue for cid=1	 (burstlen=183)
-t=0    	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=183)
-t=10   	pid=2 --enqueued--> queue for cid=2	 (burstlen=152)
-t=10   	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=152)
-t=20   	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=163, getting re-enqueued)
-t=20   	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=163)
-t=30   	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=132, getting re-enqueued)
-t=30   	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=132)
-t=40   	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=143, getting re-enqueued)
-t=40   	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=143)
-t=42   	pid=3 --enqueued--> queue for cid=3	 (burstlen=242)
-t=42   	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=242)
-t=50   	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=112, getting re-enqueued)
-t=50   	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=112)
-t=60   	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=123, getting re-enqueued)
-t=60   	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=123)
-t=62   	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=222, getting re-enqueued)
-t=62   	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=222)
-t=70   	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=92, getting re-enqueued)
-t=70   	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=92)
-t=71   	pid=4 --enqueued--> queue for cid=4	 (burstlen=32)
-t=71   	pid=4 --selected--> cpu=4  		 (burstlen=32, remainingtime=32)
-t=80   	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=103, getting re-enqueued)
-t=80   	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=103)
-t=82   	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=202, getting re-enqueued)
-t=82   	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=202)
-t=87   	pid=5 --enqueued--> queue for cid=5	 (burstlen=64)
-t=87   	pid=5 --selected--> cpu=5  		 (burstlen=64, remainingtime=64)
-t=90   	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=72, getting re-enqueued)
-t=90   	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=72)
-t=91   	pid=4 --time slice expired-- cpu=4  	 (burstlen=32, remainingtime=12, getting re-enqueued)
-t=91   	pid=4 --selected--> cpu=4  		 (burstlen=32, remainingtime=12)
-t=100  	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=83, getting re-enqueued)
-t=100  	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=83)
-t=102  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=182, getting re-enqueued)
-t=103  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=182)
-t=103  	pid=4 --finished-- cpu=4  		 (finish time: 103, turnaround time: 32, waiting time: 0)
-t=106  	pid=6 --enqueued--> queue for cid=6	 (burstlen=45)
-t=107  	pid=6 --selected--> cpu=6  		 (burstlen=45, remainingtime=45)
-t=108  	pid=5 --time slice expired-- cpu=5  	 (burstlen=64, remainingtime=44, getting re-enqueued)
-t=108  	pid=5 --selected--> cpu=5  		 (burstlen=64, remainingtime=44)
-t=111  	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=52, getting re-enqueued)
-t=111  	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=52)
-t=120  	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=63, getting re-enqueued)
-t=120  	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=63)
-t=121  	pid=7 --enqueued--> queue for cid=7	 (burstlen=304)
-t=121  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=304)
-t=123  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=162, getting re-enqueued)
-t=123  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=162)
-t=127  	pid=6 --time slice expired-- cpu=6  	 (burstlen=45, remainingtime=25, getting re-enqueued)
-t=127  	pid=6 --selected--> cpu=6  		 (burstlen=45, remainingtime=25)
-t=128  	pid=5 --time slice expired-- cpu=5  	 (burstlen=64, remainingtime=24, getting re-enqueued)
-t=128  	pid=5 --selected--> cpu=5  		 (burstlen=64, remainingtime=24)
-t=131  	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=32, getting re-enqueued)
-t=131  	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=32)
-t=140  	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=43, getting re-enqueued)
-t=140  	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=43)
-t=141  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=284, getting re-enqueued)
-t=141  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=284)
-t=143  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=142, getting re-enqueued)
-t=143  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=142)
-t=147  	pid=6 --time slice expired-- cpu=6  	 (burstlen=45, remainingtime=5, getting re-enqueued)
-t=147  	pid=6 --selected--> cpu=6  		 (burstlen=45, remainingtime=5)
-t=148  	pid=5 --time slice expired-- cpu=5  	 (burstlen=64, remainingtime=4, getting re-enqueued)
-t=148  	pid=5 --selected--> cpu=5  		 (burstlen=64, remainingtime=4)
-t=151  	pid=2 --time slice expired-- cpu=2  	 (burstlen=152, remainingtime=12, getting re-enqueued)
-t=151  	pid=2 --selected--> cpu=2  		 (burstlen=152, remainingtime=12)
-t=152  	pid=5 --finished-- cpu=5  		 (finish time: 152, turnaround time: 65, waiting time: 1)
-t=152  	pid=6 --finished-- cpu=6  		 (finish time: 152, turnaround time: 46, waiting time: 1)
-t=160  	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=23, getting re-enqueued)
-t=160  	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=23)
-t=161  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=264, getting re-enqueued)
-t=161  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=264)
-t=163  	pid=2 --finished-- cpu=2  		 (finish time: 163, turnaround time: 153, waiting time: 1)
-t=163  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=122, getting re-enqueued)
-t=163  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=122)
-t=170  	pid=8 --enqueued--> queue for cid=8	 (burstlen=100)
-t=170  	pid=8 --selected--> cpu=8  		 (burstlen=100, remainingtime=100)
-t=181  	pid=1 --time slice expired-- cpu=1  	 (burstlen=183, remainingtime=3, getting re-enqueued)
-t=181  	pid=1 --selected--> cpu=1  		 (burstlen=183, remainingtime=3)
-t=181  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=244, getting re-enqueued)
-t=181  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=244)
-t=183  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=102, getting re-enqueued)
-t=183  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=102)
-t=184  	pid=1 --finished-- cpu=1  		 (finish time: 184, turnaround time: 184, waiting time: 1)
-t=190  	pid=8 --time slice expired-- cpu=8  	 (burstlen=100, remainingtime=80, getting re-enqueued)
-t=190  	pid=8 --selected--> cpu=8  		 (burstlen=100, remainingtime=80)
-t=195  	pid=9 --enqueued--> queue for cid=1	 (burstlen=15)
-t=195  	pid=9 --selected--> cpu=1  		 (burstlen=15, remainingtime=15)
-t=201  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=224, getting re-enqueued)
-t=201  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=224)
-t=203  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=82, getting re-enqueued)
-t=203  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=82)
-t=210  	pid=8 --time slice expired-- cpu=8  	 (burstlen=100, remainingtime=60, getting re-enqueued)
-t=210  	pid=8 --selected--> cpu=8  		 (burstlen=100, remainingtime=60)
-t=210  	pid=9 --finished-- cpu=1  		 (finish time: 210, turnaround time: 15, waiting time: 0)
-t=213  	pid=10--enqueued--> queue for cid=2	 (burstlen=27)
-t=213  	pid=10--selected--> cpu=2  		 (burstlen=27, remainingtime=27)
-t=222  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=204, getting re-enqueued)
-t=222  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=204)
-t=224  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=62, getting re-enqueued)
-t=224  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=62)
-t=230  	pid=8 --time slice expired-- cpu=8  	 (burstlen=100, remainingtime=40, getting re-enqueued)
-t=230  	pid=8 --selected--> cpu=8  		 (burstlen=100, remainingtime=40)
-t=234  	pid=10--time slice expired-- cpu=2  	 (burstlen=27, remainingtime=7, getting re-enqueued)
-t=234  	pid=10--selected--> cpu=2  		 (burstlen=27, remainingtime=7)
-t=241  	pid=10--finished-- cpu=2  		 (finish time: 241, turnaround time: 28, waiting time: 1)
-t=242  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=184, getting re-enqueued)
-t=242  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=184)
-t=244  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=42, getting re-enqueued)
-t=244  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=42)
-t=245  	pid=11--enqueued--> queue for cid=3	 (burstlen=17)
-t=251  	pid=8 --time slice expired-- cpu=8  	 (burstlen=100, remainingtime=20, getting re-enqueued)
-t=251  	pid=8 --selected--> cpu=8  		 (burstlen=100, remainingtime=20)
-t=256  	pid=12--enqueued--> queue for cid=4	 (burstlen=13)
-t=256  	pid=12--selected--> cpu=4  		 (burstlen=13, remainingtime=13)
-t=262  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=164, getting re-enqueued)
-t=262  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=164)
-t=264  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=22, getting re-enqueued)
-t=264  	pid=11--selected--> cpu=3  		 (burstlen=17, remainingtime=17)
-t=269  	pid=12--finished-- cpu=4  		 (finish time: 269, turnaround time: 13, waiting time: 0)
-t=270  	pid=13--enqueued--> queue for cid=5	 (burstlen=182)
-t=270  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=182)
-t=271  	pid=8 --finished-- cpu=8  		 (finish time: 271, turnaround time: 101, waiting time: 1)
-t=281  	pid=11--finished-- cpu=3  		 (finish time: 281, turnaround time: 36, waiting time: 19)
-t=281  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=22)
-t=282  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=144, getting re-enqueued)
-t=282  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=144)
-t=288  	pid=14--enqueued--> queue for cid=6	 (burstlen=35)
-t=288  	pid=14--selected--> cpu=6  		 (burstlen=35, remainingtime=35)
-t=290  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=162, getting re-enqueued)
-t=290  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=162)
-t=301  	pid=3 --time slice expired-- cpu=3  	 (burstlen=242, remainingtime=2, getting re-enqueued)
-t=301  	pid=3 --selected--> cpu=3  		 (burstlen=242, remainingtime=2)
-t=302  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=124, getting re-enqueued)
-t=302  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=124)
-t=303  	pid=3 --finished-- cpu=3  		 (finish time: 303, turnaround time: 261, waiting time: 19)
-t=308  	pid=15--enqueued--> queue for cid=7	 (burstlen=74)
-t=308  	pid=14--time slice expired-- cpu=6  	 (burstlen=35, remainingtime=15, getting re-enqueued)
-t=308  	pid=14--selected--> cpu=6  		 (burstlen=35, remainingtime=15)
-t=310  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=142, getting re-enqueued)
-t=310  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=142)
-t=321  	pid=16--enqueued--> queue for cid=8	 (burstlen=360)
-t=321  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=360)
-t=322  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=104, getting re-enqueued)
-t=322  	pid=15--selected--> cpu=7  		 (burstlen=74, remainingtime=74)
-t=323  	pid=14--finished-- cpu=6  		 (finish time: 323, turnaround time: 35, waiting time: 0)
-t=331  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=122, getting re-enqueued)
-t=331  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=122)
-t=342  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=340, getting re-enqueued)
-t=342  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=340)
-t=343  	pid=15--time slice expired-- cpu=7  	 (burstlen=74, remainingtime=54, getting re-enqueued)
-t=343  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=104)
-t=351  	pid=17--enqueued--> queue for cid=1	 (burstlen=74)
-t=351  	pid=17--selected--> cpu=1  		 (burstlen=74, remainingtime=74)
-t=351  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=102, getting re-enqueued)
-t=351  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=102)
-t=362  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=320, getting re-enqueued)
-t=362  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=320)
-t=363  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=84, getting re-enqueued)
-t=363  	pid=15--selected--> cpu=7  		 (burstlen=74, remainingtime=54)
-t=371  	pid=17--time slice expired-- cpu=1  	 (burstlen=74, remainingtime=54, getting re-enqueued)
-t=371  	pid=17--selected--> cpu=1  		 (burstlen=74, remainingtime=54)
-t=371  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=82, getting re-enqueued)
-t=371  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=82)
-t=380  	pid=18--enqueued--> queue for cid=2	 (burstlen=51)
-t=380  	pid=18--selected--> cpu=2  		 (burstlen=51, remainingtime=51)
-t=382  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=300, getting re-enqueued)
-t=382  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=300)
-t=383  	pid=15--time slice expired-- cpu=7  	 (burstlen=74, remainingtime=34, getting re-enqueued)
-t=383  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=84)
-t=391  	pid=17--time slice expired-- cpu=1  	 (burstlen=74, remainingtime=34, getting re-enqueued)
-t=391  	pid=17--selected--> cpu=1  		 (burstlen=74, remainingtime=34)
-t=391  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=62, getting re-enqueued)
-t=391  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=62)
-t=400  	pid=18--time slice expired-- cpu=2  	 (burstlen=51, remainingtime=31, getting re-enqueued)
-t=400  	pid=18--selected--> cpu=2  		 (burstlen=51, remainingtime=31)
-t=402  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=280, getting re-enqueued)
-t=402  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=280)
-t=403  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=64, getting re-enqueued)
-t=403  	pid=15--selected--> cpu=7  		 (burstlen=74, remainingtime=34)
-t=411  	pid=17--time slice expired-- cpu=1  	 (burstlen=74, remainingtime=14, getting re-enqueued)
-t=411  	pid=17--selected--> cpu=1  		 (burstlen=74, remainingtime=14)
-t=411  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=42, getting re-enqueued)
-t=411  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=42)
-t=420  	pid=18--time slice expired-- cpu=2  	 (burstlen=51, remainingtime=11, getting re-enqueued)
-t=420  	pid=18--selected--> cpu=2  		 (burstlen=51, remainingtime=11)
-t=422  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=260, getting re-enqueued)
-t=422  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=260)
-t=423  	pid=15--time slice expired-- cpu=7  	 (burstlen=74, remainingtime=14, getting re-enqueued)
-t=423  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=64)
-t=424  	pid=19--enqueued--> queue for cid=3	 (burstlen=33)
-t=424  	pid=19--selected--> cpu=3  		 (burstlen=33, remainingtime=33)
-t=426  	pid=17--finished-- cpu=1  		 (finish time: 426, turnaround time: 75, waiting time: 1)
-t=432  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=22, getting re-enqueued)
-t=432  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=22)
-t=432  	pid=18--finished-- cpu=2  		 (finish time: 432, turnaround time: 52, waiting time: 1)
-t=442  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=240, getting re-enqueued)
-t=442  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=240)
-t=443  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=44, getting re-enqueued)
-t=443  	pid=15--selected--> cpu=7  		 (burstlen=74, remainingtime=14)
-t=444  	pid=19--time slice expired-- cpu=3  	 (burstlen=33, remainingtime=13, getting re-enqueued)
-t=444  	pid=19--selected--> cpu=3  		 (burstlen=33, remainingtime=13)
-t=452  	pid=13--time slice expired-- cpu=5  	 (burstlen=182, remainingtime=2, getting re-enqueued)
-t=452  	pid=13--selected--> cpu=5  		 (burstlen=182, remainingtime=2)
-t=454  	pid=13--finished-- cpu=5  		 (finish time: 454, turnaround time: 184, waiting time: 2)
-t=456  	pid=20--enqueued--> queue for cid=4	 (burstlen=251)
-t=456  	cpu=6  finished working
-t=456  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=251)
-t=456  	cpu=1  finished working
-t=456  	cpu=5  finished working
-t=456  	cpu=2  finished working
-t=457  	pid=19--finished-- cpu=3  		 (finish time: 457, turnaround time: 33, waiting time: 0)
-t=457  	cpu=3  finished working
-t=457  	pid=15--finished-- cpu=7  		 (finish time: 457, turnaround time: 149, waiting time: 75)
-t=457  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=44)
-t=462  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=220, getting re-enqueued)
-t=462  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=220)
-t=476  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=231, getting re-enqueued)
-t=476  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=231)
-t=478  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=24, getting re-enqueued)
-t=478  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=24)
-t=483  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=200, getting re-enqueued)
-t=483  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=200)
-t=497  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=211, getting re-enqueued)
-t=497  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=211)
-t=498  	pid=7 --time slice expired-- cpu=7  	 (burstlen=304, remainingtime=4, getting re-enqueued)
-t=498  	pid=7 --selected--> cpu=7  		 (burstlen=304, remainingtime=4)
-t=502  	pid=7 --finished-- cpu=7  		 (finish time: 502, turnaround time: 381, waiting time: 77)
-t=502  	cpu=7  finished working
-t=503  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=180, getting re-enqueued)
-t=503  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=180)
-t=517  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=191, getting re-enqueued)
-t=517  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=191)
-t=523  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=160, getting re-enqueued)
-t=523  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=160)
-t=537  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=171, getting re-enqueued)
-t=537  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=171)
-t=543  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=140, getting re-enqueued)
-t=543  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=140)
-t=557  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=151, getting re-enqueued)
-t=557  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=151)
-t=563  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=120, getting re-enqueued)
-t=563  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=120)
-t=577  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=131, getting re-enqueued)
-t=577  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=131)
-t=584  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=100, getting re-enqueued)
-t=584  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=100)
-t=598  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=111, getting re-enqueued)
-t=598  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=111)
-t=604  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=80, getting re-enqueued)
-t=604  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=80)
-t=618  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=91, getting re-enqueued)
-t=618  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=91)
-t=624  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=60, getting re-enqueued)
-t=624  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=60)
-t=638  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=71, getting re-enqueued)
-t=638  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=71)
-t=645  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=40, getting re-enqueued)
-t=645  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=40)
-t=658  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=51, getting re-enqueued)
-t=658  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=51)
-t=665  	pid=16--time slice expired-- cpu=8  	 (burstlen=360, remainingtime=20, getting re-enqueued)
-t=665  	pid=16--selected--> cpu=8  		 (burstlen=360, remainingtime=20)
-t=679  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=31, getting re-enqueued)
-t=679  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=31)
-t=685  	pid=16--finished-- cpu=8  		 (finish time: 685, turnaround time: 364, waiting time: 4)
-t=685  	cpu=8  finished working
-t=699  	pid=20--time slice expired-- cpu=4  	 (burstlen=251, remainingtime=11, getting re-enqueued)
-t=699  	pid=20--selected--> cpu=4  		 (burstlen=251, remainingtime=11)
-t=710  	pid=20--finished-- cpu=4  		 (finish time: 710, turnaround time: 254, waiting time: 3)
-t=710  	cpu=4  finished working
+time=0, cpu=1, pid=1, burstlen=183, remainingtime=183
+time=10, cpu=2, pid=2, burstlen=152, remainingtime=152
+time=42, cpu=3, pid=3, burstlen=242, remainingtime=242
+time=71, cpu=4, pid=4, burstlen=32, remainingtime=32
+time=103, cpu=4, pid=5, burstlen=64, remainingtime=64
+time=162, cpu=2, pid=6, burstlen=45, remainingtime=45
+time=168, cpu=4, pid=7, burstlen=304, remainingtime=304
+time=183, cpu=1, pid=8, burstlen=100, remainingtime=100
+time=208, cpu=2, pid=9, burstlen=15, remainingtime=15
+time=223, cpu=2, pid=10, burstlen=27, remainingtime=27
+time=250, cpu=2, pid=11, burstlen=17, remainingtime=17
+time=267, cpu=2, pid=12, burstlen=13, remainingtime=13
+time=281, cpu=2, pid=13, burstlen=182, remainingtime=182
+time=288, cpu=1, pid=14, burstlen=35, remainingtime=35
+time=309, cpu=3, pid=15, burstlen=74, remainingtime=74
+time=324, cpu=1, pid=16, burstlen=360, remainingtime=360
+time=383, cpu=3, pid=17, burstlen=74, remainingtime=74
+time=457, cpu=3, pid=18, burstlen=51, remainingtime=51
+time=463, cpu=2, pid=19, burstlen=33, remainingtime=33
+time=472, cpu=4, pid=20, burstlen=251, remainingtime=251
 
 pid   cpu  burstlen   arv   finish  waitingtime turnaround
-1      1     183        0     184       1         184
-2      2     152       10     163       1         153
-3      3     242       42     303      19         261
+1      1     183        0     183       0         183
+2      2     152       10     162       0         152
+3      3     242       42     284       0         242
 4      4      32       71     103       0          32
-5      5      64       87     152       1          65
-6      6      45      106     152       1          46
-7      7     304      121     502      77         381
-8      8     100      170     271       1         101
-9      1      15      195     210       0          15
-10     2      27      213     241       1          28
-11     3      17      245     281      19          36
-12     4      13      256     269       0          13
-13     5     182      270     454       2         184
-14     6      35      288     323       0          35
-15     7      74      308     457      75         149
-16     8     360      321     685       4         364
-17     1      74      351     426       1          75
-18     2      51      380     432       1          52
-19     3      33      424     457       0          33
-20     4     251      456     710       3         254
-average turnaround time: 123
+5      4      64       87     168      17          81
+6      2      45      106     208      57         102
+7      4     304      121     472      47         351
+8      1     100      170     284      14         114
+9      2      15      195     223      13          28
+10     2      27      213     250      10          37
+11     2      17      246     267       4          21
+12     2      13      256     281      12          25
+13     2     182      270     463      11         193
+14     1      35      288     324       1          36
+15     3      74      309     383       0          74
+16     1     360      322     684       2         362
+17     3      74      351     457      32         106
+18     3      51      380     508      77         128
+19     2      33      425     496      38          71
+20     4     251      457     723      15         266
+average turnaround time: 130
