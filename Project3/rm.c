@@ -26,7 +26,7 @@ int need[MAXP][MAXR];
 int Request[MAXP][MAXR];
 
 pthread_mutex_t lock;
-pthread_cond_t cv[MAXP];
+pthread_cond_t cv;
 // end of global variables
 
 int getSelectedID(pthread_t threadID) {
@@ -38,6 +38,13 @@ int getSelectedID(pthread_t threadID) {
         }
     }
     return res;
+}
+
+int isArraySmaller(int arr1[], int arr2[], int size) {
+    for (int i = 0; i < size; i++)
+        if (arr1[i] > arr2[i])
+            return 0;
+    return 1;
 }
 
 int rm_thread_started(int tid)
@@ -92,7 +99,7 @@ int rm_claim (int claim[])
                 return -1;
             }
             maxDemand[tid][i] = claim[i];
-            need[tid][i] = maxDemand[tid][i] - allocation[tid][i];
+            need[tid][i] = maxDemand[tid][i];
         }
     }
     pthread_mutex_unlock(&lock);
@@ -127,6 +134,7 @@ int rm_init(int p_count, int r_count, int r_exist[],  int avoid)
             allocation[i][j] = 0;
             need[i][j] = 0;
             Request[i][j] = 0;
+            maxDemand[i][j] = 0;
         }
     }
 
@@ -134,29 +142,23 @@ int rm_init(int p_count, int r_count, int r_exist[],  int avoid)
         printf("mutex lock cannot be initialized");
         return -1;
     }
-    for (int i = 0; i < N; i++) {
-        if (pthread_cond_init(&cv[i], NULL) != 0) {
-            printf("condition variable cannot be initialized");
-            return -1;
-        }
+    if (pthread_cond_init(&cv, NULL) != 0) {
+        printf("condition variable cannot be initialized");
+        return -1;
     }
 
     return  (ret);
 }
 
-int canAllocate(int request[]) {
-    for (int i = 0; i < M; i++) {
-        if (request[i] > ExistingRes[i])
-            return 0;
-    }
+int canAllocate(int request[], int tid) {
+    if (!isArraySmaller(request, ExistingRes, M))
+        return 0;
     return 1;
 }
 
 int isAvailable(int request[]) {
-    for (int i = 0; i < M; i++) {
-        if (request[i] > available[i])
-            return 0;
-    }
+    if (!isArraySmaller(request, available, M))
+        return 0;
     return 1;
 }
 
@@ -166,6 +168,36 @@ void allocate(int tid, int request[]) {
         allocation[tid][i] += request[i];
         need[tid][i] = maxDemand[tid][i] - allocation[tid][i];
     }
+}
+
+int isSafe() {
+    int work[M];
+    int finish[N];
+    for (int i = 0; i < M; i++)
+        work[i] = available[i];
+    for (int i = 0; i < N; i++)
+        finish[i] = 0;
+    
+    int foundFlag = 1;
+    while (foundFlag) {
+        foundFlag = 0;
+        for (int i = 0; i < N; i++) {
+            if (!finish[i] && isArraySmaller(need[i], work, M)) {
+                foundFlag = 1;
+                for (int j = 0; j < M; j++) {
+                    work[j] += allocation[i][j];
+                }
+                finish[i] = 1;
+                break;
+            }
+        }
+    }
+
+    for (int i = 0; i < N; i++) {
+        if (!finish[i])
+            return 0;
+    }
+    return 1;
 }
 
 int rm_request (int request[])
@@ -179,7 +211,7 @@ int rm_request (int request[])
         return -1;
     }
 
-    if (!canAllocate(request)) {
+    if (!canAllocate(request, tid)) { // request exceeds max available resource instance
         printf("more resources requested than available");
         pthread_mutex_unlock(&lock);
         return -1;
@@ -190,13 +222,12 @@ int rm_request (int request[])
         Request[tid][i] = request[i];
     }
 
-    if (DA == 0) { // deadlock detection
-        while (!isAvailable(request)) // wait until resources become available
-            pthread_cond_wait(&cv[tid], &lock);
+    while (!isAvailable(request)) // wait until resources become available
+        pthread_cond_wait(&cv, &lock);
         
-    }
-    else { // deadlock avoidance
-
+    if (DA == 1) { // deadlock avoidance
+        while (!isSafe(request)) // wait until resources become available
+            pthread_cond_wait(&cv, &lock);
     }
 
     pthread_mutex_unlock(&lock);
