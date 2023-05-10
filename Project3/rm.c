@@ -166,7 +166,17 @@ void allocate(int tid, int request[]) {
     for (int i = 0; i < M; i++) {
         available[i] -= request[i];
         allocation[tid][i] += request[i];
-        need[tid][i] = maxDemand[tid][i] - allocation[tid][i];
+        if (DA == 1)
+            need[tid][i] -= request[i];
+    }
+}
+
+void deallocate(int tid, int release[]) {
+    for (int i = 0; i < M; i++) {
+        available[i] += release[i];
+        allocation[tid][i] -= release[i];
+        if (DA == 1)
+            need[tid][i] = maxDemand[tid][i] - allocation[tid][i];
     }
 }
 
@@ -200,6 +210,16 @@ int isSafe() {
     return 1;
 }
 
+int isNextStateSafe(int tid, int request[]) {
+    allocate(tid, request);
+    if (!isSafe()) {
+        deallocate(tid, request);
+        return 0;
+    }
+    deallocate(tid, request);
+    return 1;
+}
+
 int rm_request (int request[])
 {
     pthread_mutex_lock(&lock);
@@ -221,14 +241,27 @@ int rm_request (int request[])
     for (int i = 0; i < M; i++) {
         Request[tid][i] = request[i];
     }
-
-    while (!isAvailable(request)) // wait until resources become available
-        pthread_cond_wait(&cv, &lock);
         
     if (DA == 1) { // deadlock avoidance
-        while (!isSafe(request)) // wait until resources become available
+        if (!isArraySmaller(request, need[tid], M)) { // request exceeded maximum claim
+            printf("process has exceeded its maximum claim");
+            pthread_mutex_unlock(&lock);
+            return -1;
+        }
+
+        while (!isAvailable(request) || !isNextStateSafe(tid, request)) // resources are not available or next state is not safe
             pthread_cond_wait(&cv, &lock);
+        
+        allocate(tid, request);
     }
+    else {
+        while (!isAvailable(request)) // wait until resources become available
+            pthread_cond_wait(&cv, &lock);
+        allocate(tid, request);
+    }
+
+    for (int i = 0; i < M; i++) // the thread has been allocated all of its requests
+        Request[tid][i] = 0;
 
     pthread_mutex_unlock(&lock);
     return(ret);
@@ -237,21 +270,165 @@ int rm_request (int request[])
 
 int rm_release (int release[])
 {
+    pthread_mutex_lock(&lock);
     int ret = 0;
+    int tid = getSelectedID(pthread_self());
 
+    // check if thread tries to deallocate more instances than allocated
+    if (!isArraySmaller(release, allocation[tid], M)) {
+        printf("thread tried to release more instances than allocated");
+        pthread_mutex_unlock(&lock);
+        return -1;
+    }
+
+    deallocate(tid, release);
+    // wake up sleeping threads
+    pthread_cond_broadcast(&cv);
+    pthread_mutex_unlock(&lock);
     return (ret);
 }
 
+int isRequestZero(int tid) {
+    for (int i = 0; i < N; i++) {
+        if (Request[tid][i] != 0)
+            return 0;
+    }
+    return 1;
+}
 
 int rm_detection()
 {
-    int ret = 0;
-    
-    return (ret);
+    pthread_mutex_lock(&lock);
+    int work[M];
+    int finish[N];
+
+    for (int i = 0; i < M; i++)
+        work[i] = available[i];
+
+    for (int i = 0; i < N; i++) {
+        if (!isRequestZero(i))
+            finish[i] = 0;
+        else
+            finish[i] = 1;
+    }
+
+    int foundFlag = 1;
+    while (foundFlag) {
+        foundFlag = 0;
+        for (int i = 0; i < N; i++) {
+            if (!finish[i] && isArraySmaller(Request[i], work, M)) {
+                foundFlag = 1;
+                for (int j = 0; j < M; j++) {
+                    work[j] += allocation[i][j];
+                }
+                finish[i] = 1;
+                break;
+            }
+        }
+    }
+
+    int count = 0;
+    for (int i = 0; i < N; i++) {
+        if (!finish[i])
+            count++;
+    }
+
+    pthread_mutex_unlock(&lock);
+    return count;
 }
 
 
 void rm_print_state (char hmsg[])
 {
-    return;
-}
+    pthread_mutex_lock(&lock);
+    printf("#################################\n");
+    printf("%s\n", hmsg);
+    printf("#################################\n");
+
+    printf("Exist:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n%-5s", "");
+
+    for (int i = 0; i < M; i++) {
+        printf("%-4d", ExistingRes[i]);
+    }
+    printf("\n\n");
+
+    printf("Available:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n%-5s", "");
+
+    for (int i = 0; i < M; i++) {
+        printf("%-4d", available[i]);
+    }
+    printf("\n\n");
+
+
+
+
+    printf("Allocation:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n");
+
+    for (int i = 0; i < N; i++) {
+        printf("%s%d%-3s", "T", i, ":");
+        for (int j = 0; j < M; j++) {
+            printf("%-4d", allocation[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("Request:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n");
+
+    for (int i = 0; i < N; i++) {
+        printf("%s%d%-3s", "T", i, ":");
+        for (int j = 0; j < M; j++) {
+            printf("%-4d", Request[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("MaxDemand:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n");
+
+    for (int i = 0; i < N; i++) {
+        printf("%s%d%-3s", "T", i, ":");
+        for (int j = 0; j < M; j++) {
+            printf("%-4d", maxDemand[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("Need:\n");
+    printf("%-5s", "");
+    for (int i = 0; i < M; i++)
+        printf("%s%-3d", "R", i);
+    printf("\n");
+
+    for (int i = 0; i < N; i++) {
+        printf("%s%d%-3s", "T", i, ":");
+        for (int j = 0; j < M; j++) {
+            printf("%-4d", need[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("#################################\n\n");
+    pthread_mutex_unlock(&lock);
+} 
