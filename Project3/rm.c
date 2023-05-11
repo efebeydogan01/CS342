@@ -52,7 +52,7 @@ int rm_thread_started(int tid)
     pthread_mutex_lock(&lock);
     int ret = 0;
     if (tid < 0 || tid >= N) {
-        printf("invalid thread id supplied to rm_thread_started");
+        printf("invalid thread id supplied to rm_thread_started\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
@@ -70,7 +70,7 @@ int rm_thread_ended()
     int ret = 0;
     int tid = getSelectedID(pthread_self());
     if (tid == -1) {
-        printf("thread information cannot be found in rm_thread_ended");
+        printf("thread information cannot be found in rm_thread_ended\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
@@ -86,7 +86,7 @@ int rm_claim (int claim[])
     int ret = 0;
     int tid = getSelectedID(pthread_self());
     if (tid == -1) {
-        printf("thread information cannot be found in rm_claim");
+        printf("thread information cannot be found in rm_claim\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
@@ -94,7 +94,7 @@ int rm_claim (int claim[])
     if (DA == 1) {
         for (int i = 0; i < M; i++) {
             if (claim[i] > ExistingRes[i]) {
-                printf("process claims more resources than existing");
+                printf("process claims more resources than existing\n");
                 pthread_mutex_unlock(&lock);
                 return -1;
             }
@@ -139,11 +139,11 @@ int rm_init(int p_count, int r_count, int r_exist[],  int avoid)
     }
 
     if (pthread_mutex_init(&lock, NULL) != 0 ) {
-        printf("mutex lock cannot be initialized");
+        printf("mutex lock cannot be initialized\n");
         return -1;
     }
     if (pthread_cond_init(&cv, NULL) != 0) {
-        printf("condition variable cannot be initialized");
+        printf("condition variable cannot be initialized\n");
         return -1;
     }
 
@@ -226,13 +226,13 @@ int rm_request (int request[])
     int ret = 0;
     int tid = getSelectedID(pthread_self());
     if (tid == -1) {
-        printf("thread information cannot be found in rm_request");
+        printf("thread information cannot be found in rm_request\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
 
     if (!canAllocate(request, tid)) { // request exceeds max available resource instance
-        printf("more resources requested than available");
+        printf("more resources requested than available\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
@@ -244,7 +244,7 @@ int rm_request (int request[])
         
     if (DA == 1) { // deadlock avoidance
         if (!isArraySmaller(request, need[tid], M)) { // request exceeded maximum claim
-            printf("process has exceeded its maximum claim");
+            printf("process has exceeded its maximum claim\n");
             pthread_mutex_unlock(&lock);
             return -1;
         }
@@ -276,7 +276,7 @@ int rm_release (int release[])
 
     // check if thread tries to deallocate more instances than allocated
     if (!isArraySmaller(release, allocation[tid], M)) {
-        printf("thread tried to release more instances than allocated");
+        printf("thread tried to release more instances than allocated\n");
         pthread_mutex_unlock(&lock);
         return -1;
     }
