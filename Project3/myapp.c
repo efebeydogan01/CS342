@@ -6,14 +6,16 @@
 #include <stdarg.h>
 #include "rm.h"
 
-#define NUMR 6        // number of resource types
-#define NUMP 3        // number of threads
+#define NUMR 5        // number of resource types
+#define NUMP 5        // number of threads
 
 int AVOID = 1;
-int exist[NUMR] =  {8, 9, 4, 7, 11, 9};  // resources existing in the system
+int exist[NUMR] =  {1, 1, 1, 1, 1};  // resources existing in the system
+pthread_mutex_t tlock;
 
 void pr (int tid, char astr[], int m, int r[])
 {
+    pthread_mutex_lock(&tlock);
     int i;
     printf ("thread %d, %s, [", tid, astr);
     for (i=0; i<m; ++i) {
@@ -23,6 +25,7 @@ void pr (int tid, char astr[], int m, int r[])
             printf ("%d,", r[i]);
     }
     printf ("]\n");
+    pthread_mutex_unlock(&tlock);
 }
 
 
@@ -39,8 +42,7 @@ void setarray (int r[MAXR], int m, ...)
     return;
 }
 
-
-void *threadfunc1 (void *a)
+void *threadfunc(void *a)
 {
     int tid;
     int request1[MAXR];
@@ -50,16 +52,20 @@ void *threadfunc1 (void *a)
     tid = *((int*)a);
     rm_thread_started (tid);
 
-    setarray(claim, NUMR, 8);
-    rm_claim (claim);
+    setarray(claim, NUMR, 0, 0, 0, 0, 0);
+    claim[tid] = 1;
+    claim[(tid + 1) % NUMR] = 1;
+    rm_claim(claim);
     
-    setarray(request1, NUMR, 5);
+    setarray(request1, NUMR, 0, 0, 0, 0, 0);
+    request1[tid] = 1;
     pr (tid, "REQ", NUMR, request1);
     rm_request (request1);
 
     sleep(4);
 
-    setarray(request2, NUMR, 3);
+    setarray(request2, NUMR, 0, 0, 0, 0, 0);
+    request2[(tid + 1) % NUMR] = 1;
     pr (tid, "REQ", NUMR, request2);
     rm_request (request2);
 
@@ -70,38 +76,6 @@ void *threadfunc1 (void *a)
     pthread_exit(NULL);
 }
 
-
-void *threadfunc2 (void *a)
-{
-    int tid;
-    int request1[MAXR];
-    int request2[MAXR];
-    int claim[MAXR];
-
-    tid = *((int*)a);
-    rm_thread_started (tid);
-
-    setarray(claim, NUMR, 8);
-    rm_claim (claim);
-
-    setarray(request1, NUMR, 2);
-    pr (tid, "REQ", NUMR, request1);
-    rm_request (request1);
-
-    sleep(2);
-    
-    setarray(request2, NUMR, 4);
-    pr (tid, "REQ", NUMR, request2);
-    rm_request (request2);
-
-    rm_release (request1);
-    rm_release (request2);
-
-    rm_thread_ended ();
-    pthread_exit(NULL);
-}
-
-
 int main(int argc, char **argv)
 {
     int i;
@@ -109,6 +83,7 @@ int main(int argc, char **argv)
     pthread_t threadArray[NUMP];
     int count;
     int ret;
+    pthread_mutex_init(&tlock, NULL);
 
     if (argc != 2) {
         printf ("usage: ./app avoidflag\n");
@@ -117,40 +92,46 @@ int main(int argc, char **argv)
 
     AVOID = atoi (argv[1]);
     
+    printf("This example program simulates the Dining Philosophers Problem to demonstrate the occurence, detection, and avoidance of the deadlocks.\n \
+    There are 5 threads and 5 resources. Each thread first requests and gets the resource at their index, and then the one on their right. Since the second round of requests cannot be successful, each thread becomes deadlocked.\n");
+
     if (AVOID == 1)
         rm_init (NUMP, NUMR, exist, 1);
     else
         rm_init (NUMP, NUMR, exist, 0);
 
-    i = 0;  // we select a tid for the thread
-    tids[i] = i;
-    pthread_create (&(threadArray[i]), NULL,
-                    (void *) threadfunc1, (void *)
-                    (void*)&tids[i]);
+    for (int i = 0; i < NUMP; i++) {
+        tids[i] = i;
+        pthread_create (&(threadArray[i]), NULL,
+                        (void *) threadfunc, (void *)
+                        (void*)&tids[i]);
+    }
     
-    i = 1;  // we select a tid for the thread
-    tids[i] = i;
-    pthread_create (&(threadArray[i]), NULL,
-                    (void *) threadfunc2, (void *)
-                    (void*)&tids[i]);
-
     count = 0;
     while ( count < 10) {
         sleep(1);
-        rm_print_state("The current state");
-        ret = rm_detection();
-        if (ret > 0) {
-            printf ("deadlock detected, count=%d\n", ret);
-            rm_print_state("state after deadlock");
+        if (count == 0)
+            rm_print_state("The initial state");
+        else {
+            ret = rm_detection();
+            if (ret > 0) {
+                printf ("deadlock detected, count=%d\n", ret);
+                rm_print_state("State after deadlock");
+                break;
+            }
         }
         count++;
     }
-    
+    printf("ret:%d\n", ret);
+
     if (ret == 0) {
         for (i = 0; i < NUMP; ++i) {
             pthread_join (threadArray[i], NULL);
             printf ("joined\n");
         }
+    }
+    else {
+        printf("stopping execution with %d deadlocked threads", ret);
     }
 }
 
