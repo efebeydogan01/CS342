@@ -81,7 +81,7 @@ int rm_thread_ended()
 
 
 int rm_claim (int claim[])
-{
+{    
     pthread_mutex_lock(&lock);
     int ret = 0;
     int tid = getSelectedID(pthread_self());
@@ -306,10 +306,7 @@ int rm_detection()
         work[i] = available[i];
 
     for (int i = 0; i < N; i++) {
-        if (!isRequestZero(i))
-            finish[i] = 0;
-        else
-            finish[i] = 1;
+        finish[i] = 0;
     }
 
     int foundFlag = 1;

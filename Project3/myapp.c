@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     int tids[NUMP];
     pthread_t threadArray[NUMP];
     int count;
-    int ret;
+    int ret = 0;
     pthread_mutex_init(&tlock, NULL);
 
     if (argc != 2) {
@@ -92,8 +92,18 @@ int main(int argc, char **argv)
 
     AVOID = atoi (argv[1]);
     
-    printf("This example program simulates the Dining Philosophers Problem to demonstrate the occurence, detection, and avoidance of the deadlocks.\n \
-    There are 5 threads and 5 resources. Each thread first requests and gets the resource at their index, and then the one on their right. Since the second round of requests cannot be successful, each thread becomes deadlocked.\n");
+    if (AVOID == 0)
+        printf("NO DEADLOCK AVOIDANCE\n");
+    else
+        printf("DEADLOCK AVOIDANCE IS USED\n");
+
+    printf("This example program simulates the Dining Philosophers Problem to demonstrate the occurence, detection, and avoidance of the deadlocks.\n");
+    printf("There are 5 threads and 5 resources. Each thread first requests and gets the resource at their index, and then the one on their right.\n");
+
+    if (AVOID  == 0)
+        printf("Since the second round of requests cannot be successful, each thread becomes deadlocked.\n");
+    else
+        printf("Since deadlock avoidance is used, the threads won't become deadlocked and all threads will be able to finish execution.\n");
 
     if (AVOID == 1)
         rm_init (NUMP, NUMR, exist, 1);
@@ -108,31 +118,39 @@ int main(int argc, char **argv)
     }
     
     count = 0;
-    while ( count < 10) {
-        sleep(1);
-        if (count == 0)
-            rm_print_state("The initial state");
+    while ( count < 5) {
+        sleep(2);
+        if (AVOID == 0) {
+            if (count == 0)
+                rm_print_state("After first round of requests");
+            else {
+                ret = rm_detection();
+                if (ret > 0) {
+                    printf ("\nDEADLOCK DETECTED. DEADLOCKED THREAD COUNT=%d\n\n", ret);
+                    rm_print_state("State after deadlock");
+                    break;
+                }
+            }
+        }
         else {
-            ret = rm_detection();
-            if (ret > 0) {
-                printf ("deadlock detected, count=%d\n", ret);
-                rm_print_state("State after deadlock");
-                break;
+            if (count == 0) {
+                rm_print_state("After first round of requests");
+                printf("As seen above, one of the requests has not been allocated its initial request. The thread is waited to avoid the deadlock (loop is broken).\n\n");
+            }
+            else {
+                rm_print_state("STATE");
             }
         }
         count++;
     }
-    printf("ret:%d\n", ret);
 
-    if (ret == 0) {
+    if (AVOID == 1) {
         for (i = 0; i < NUMP; ++i) {
             pthread_join (threadArray[i], NULL);
-            printf ("joined\n");
         }
+        printf ("All threads were successfully joined without deadlocks (deadlock avoidance)\n");
     }
     else {
-        printf("stopping execution with %d deadlocked threads", ret);
+        printf("Exterminating execution with %d deadlocked threads (no deadlock avoidance)\n", ret);
     }
 }
-
-
