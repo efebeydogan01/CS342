@@ -1,4 +1,3 @@
-
 all: librm.a  myapp
 
 librm.a:  rm.c
