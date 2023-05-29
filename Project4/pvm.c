@@ -7,19 +7,21 @@
 #define BUFFER_SIZE 8
 
 // Function to read the contents of a file
-unsigned long read_file(const char* filename, unsigned long offset) {
+// The given index is multiplied by 8 (bytes) to determine the byte offset
+unsigned long read_file(const char* filename, unsigned long index) {
     int fd = open(filename, O_RDONLY);
     if (fd == -1) {
         perror("Error opening file");
         return 1;
     }
     // Move the file pointer to the desired offset
+    unsigned long offset = index * sizeof(unsigned long);
     if (lseek(fd, offset, SEEK_SET) == -1) {
         perror("Error seeking file");
         close(fd);
         return 1;
     }
-    unsigned long value = 1;
+    unsigned long value = 0;
     if (read(fd, &value, sizeof(unsigned long)) == -1) {
         perror("Error reading file");
         close(fd);
@@ -32,10 +34,40 @@ unsigned long read_file(const char* filename, unsigned long offset) {
 
 // Function implementation for -frameinfo option
 void process_frameinfo(unsigned long pfn) {
-    unsigned long offset = pfn * sizeof(unsigned long);
-    unsigned long pageFlags = read_file("/proc/kpageflags", offset);
-    unsigned long pageCounts = read_file("/proc/kpagecount", offset);
-    printf("%lu\n%lu\n", pageFlags, pageCounts);
+    unsigned long pageFlags = read_file("/proc/kpageflags", pfn);
+    unsigned long pageCounts = read_file("/proc/kpagecount", pfn);
+
+    printf("Mapping count: %lu\n", pageCounts);
+
+    // Print labels
+    const char* labels[] = {
+        "LOCKED", "ERROR", "REFERENCED", "UPTODATE", "DIRTY",
+        "LRU", "ACTIVE", "SLAB", "WRITEBACK", "RECLAIM",
+        "BUDDY", "MMAP", "ANON", "SWAPCACHE", "SWAPBACKED",
+        "COMPOUND_HEAD", "COMPOUND_TAIL", "HUGE", "UNEVICTABLE", "HWPOISON",
+        "NOPAGE", "KSM", "THP", "BALLOON", "ZERO_PAGE",
+        "IDLE"
+    };
+    for (int i = 0; i < 26; i++) {
+        if (i % 5 == 0) {
+            printf("\n");
+        }
+        printf("%02d: %-15s", i, labels[i]);
+    }
+
+    printf("\n\n");
+
+    // Print the flag values
+    printf("%-13s", "FRAME#");
+    for (int i = 0; i < 26; i++) {
+        printf("%02d ", i);
+    }
+    printf("\n0x%09lx  ", pfn);
+    for (int i = 0; i < 26; i++) {
+        printf("%lu  ", (pageFlags & 1));
+        pageFlags = pageFlags >> 1;
+    }
+    printf("\n");
 }
 
 // // Function to find the total virtual memory size from /proc/PID/maps
@@ -175,83 +207,76 @@ void print_file() {
 }
 
 int main(int argc, char* argv[]) {
-    // unsigned long pfn = strtoul(argv[2], NULL, 0);
-    // printf("pfn: %lu\n", pfn);
-    // process_frameinfo(pfn);
+    if (argc < 3) {
+        printf("Invalid number of arguments\n");
+        return 1;
+    }
 
-    unsigned long va = strtoul(argv[3], NULL, 0);
-    process_mapva(atoi(argv[2]), va);
+    if (strcmp(argv[1], "-frameinfo") == 0) {
+        if (argc != 3) {
+            printf("Invalid number of arguments for -frameinfo\n");
+            return 1;
+        }
 
-    // if (argc < 3) {
-    //     printf("Invalid number of arguments\n");
-    //     return 1;
-    // }
-
-    // if (strcmp(argv[1], "-frameinfo") == 0) {
-    //     if (argc != 3) {
-    //         printf("Invalid number of arguments for -frameinfo\n");
-    //         return 1;
-    //     }
-
-    //     unsigned long pfn = strtoul(argv[2], NULL, 0);
-    //     process_frameinfo(pfn);
-    // } else if (strcmp(argv[1], "-memused") == 0) {
-    //     if (argc < 4) {
-    //         printf("Invalid number of arguments for -memused\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     process_memused(pid);
-    // } else if (strcmp(argv[1], "-mapva") == 0) {
-    //     if (argc < 5) {
-    //         printf("Invalid number of arguments for -mapva\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     const char* va = argv[4];
-    //     process_mapva(pid, va);
-    // } else if (strcmp(argv[1], "-pte") == 0) {
-    //     if (argc < 5) {
-    //         printf("Invalid number of arguments for -pte\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     const char* va = argv[4];
-    //     process_pte(pid, va);
-    // } else if (strcmp(argv[1], "-maprange") == 0) {
-    //     if (argc < 6) {
-    //         printf("Invalid number of arguments for -maprange\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     const char* va1 = argv[4];
-    //     const char* va2 = argv[5];
-    //     process_maprange(pid, va1, va2);
-    // } else if (strcmp(argv[1], "-mapall") == 0) {
-    //     if (argc < 4) {
-    //         printf("Invalid number of arguments for -mapall\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     process_mapall(pid);
-    // } else if (strcmp(argv[1], "-mapallin") == 0) {
-    //     if (argc < 4) {
-    //         printf("Invalid number of arguments for -mapallin\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     process_mapallin(pid);
-    // } else if (strcmp(argv[1], "-alltablesize") == 0) {
-    //     if (argc < 4) {
-    //         printf("Invalid number of arguments for -alltablesize\n");
-    //         return 1;
-    //     }
-    //     int pid = atoi(argv[3]);
-    //     process_alltablesize(pid);
-    // } else {
-    //     printf("Invalid option: %s\n", argv[1]);
-    //     return 1;
-    // }
+        unsigned long pfn = strtoul(argv[2], NULL, 0);
+        process_frameinfo(pfn);
+    } else if (strcmp(argv[1], "-memused") == 0) {
+        if (argc < 4) {
+            printf("Invalid number of arguments for -memused\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        //process_memused(pid);
+    } else if (strcmp(argv[1], "-mapva") == 0) {
+        if (argc < 5) {
+            printf("Invalid number of arguments for -mapva\n");
+            return 1;
+        }
+        int pid = atoi(argv[2]);
+        unsigned long va = strtoul(argv[3], NULL, 0);
+        process_mapva(pid, va);
+    } else if (strcmp(argv[1], "-pte") == 0) {
+        if (argc < 5) {
+            printf("Invalid number of arguments for -pte\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        const char* va = argv[4];
+        process_pte(pid, va);
+    } else if (strcmp(argv[1], "-maprange") == 0) {
+        if (argc < 6) {
+            printf("Invalid number of arguments for -maprange\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        const char* va1 = argv[4];
+        const char* va2 = argv[5];
+        process_maprange(pid, va1, va2);
+    } else if (strcmp(argv[1], "-mapall") == 0) {
+        if (argc < 4) {
+            printf("Invalid number of arguments for -mapall\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        process_mapall(pid);
+    } else if (strcmp(argv[1], "-mapallin") == 0) {
+        if (argc < 4) {
+            printf("Invalid number of arguments for -mapallin\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        process_mapallin(pid);
+    } else if (strcmp(argv[1], "-alltablesize") == 0) {
+        if (argc < 4) {
+            printf("Invalid number of arguments for -alltablesize\n");
+            return 1;
+        }
+        int pid = atoi(argv[3]);
+        process_alltablesize(pid);
+    } else {
+        printf("Invalid option: %s\n", argv[1]);
+        return 1;
+    }
 
     return 0;
 }
