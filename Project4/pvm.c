@@ -6,6 +6,41 @@
 
 #define BUFFER_SIZE 8
 
+int isAddressInRange(unsigned long address, unsigned long start, unsigned long end) {
+    return (address >= start && address < end);
+}
+// function to parse the maps file to see if a given virtual memory is among the virtual memory space of a process
+int isAddressInMemoryRange(unsigned long va, int pid) {
+    char mapsFilePath[20];
+    snprintf(mapsFilePath, sizeof(mapsFilePath), "/proc/%d/maps", pid);
+
+    FILE *mapsFile = fopen(mapsFilePath, "r");
+    if (mapsFile == NULL) {
+        perror("Failed to open the maps file");
+        return 1;
+    }
+    int buffer_size = 256;
+    char buffer[buffer_size];
+
+    int inRange = 0;
+    while (fgets(buffer, sizeof(buffer), mapsFile) != NULL) {
+        char *addresses = strtok(buffer, " ");
+
+        char *addressStart = strtok(addresses, "-");
+        char *addressEnd = strtok(NULL, "-");
+        
+        unsigned long start = strtoul(addressStart, NULL, 16);
+        unsigned long end = strtoul(addressEnd, NULL, 16);
+
+        if (isAddressInRange(va, start, end)) {
+            return 1;
+        }
+    }
+
+    fclose(mapsFile);
+    return 0;
+}
+
 // Function to read the contents of a file
 // The given index is multiplied by 8 (bytes) to determine the byte offset
 unsigned long read_file(const char* filename, unsigned long index) {
