@@ -99,9 +99,15 @@ void process_frameinfo(unsigned long pfn) {
 //     printf("Processing -memused: %d\n", pid);
 // }
 
-void process_mapva(int pid, const char* va) {
+void process_mapva(int pid, unsigned long va) {
     // Function implementation for -mapva option
-    printf("Processing -mapva: %d, %s\n", pid, va);
+    unsigned long vpn = va >> 12;
+    vpn = (vpn << 16) >> 16;
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "/proc/%d/pagemap", pid);
+    unsigned long pfn = read_file(filename, vpn);
+    printf("pfn: %lu\n", pfn);
 }
 
 void process_pte(int pid, const char* va) {
@@ -169,9 +175,13 @@ void print_file() {
 }
 
 int main(int argc, char* argv[]) {
-    unsigned long pfn = strtoul(argv[2], NULL, 0);
-    printf("pfn: %lu\n", pfn);
-    process_frameinfo(pfn);
+    // unsigned long pfn = strtoul(argv[2], NULL, 0);
+    // printf("pfn: %lu\n", pfn);
+    // process_frameinfo(pfn);
+
+    unsigned long va = strtoul(argv[3], NULL, 0);
+    process_mapva(atoi(argv[2]), va);
+
     // if (argc < 3) {
     //     printf("Invalid number of arguments\n");
     //     return 1;
