@@ -4,36 +4,23 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 8
 
 // Function to read the contents of a file
 unsigned long read_file(const char* filename, unsigned long offset) {
     int fd = open(filename, O_RDONLY);
     if (fd == -1) {
         perror("Error opening file");
-        return 0;
-    }
-
-    offset *= sizeof(unsigned long);
-
-    off_t result = lseek(fd, offset, SEEK_SET);
-
-    if (result == -1) {
-        close(fd);
-        perror("Error seeking file");
         return 1;
     }
-    // // Move the file pointer to the desired offset
-    // if (lseek(fd, offset, SEEK_SET) == -1) {
-    //     perror("Error seeking file");
-    //     close(fd);
-    //     return 0;
-    // }
-
-
-    unsigned long value = 0;
-    ssize_t bytesRead = read(fd, &value, sizeof(unsigned long));
-    if (bytesRead == -1) {
+    // Move the file pointer to the desired offset
+    if (lseek(fd, offset, SEEK_SET) == -1) {
+        perror("Error seeking file");
+        close(fd);
+        return 1;
+    }
+    unsigned long value = 1;
+    if (read(fd, &value, sizeof(unsigned long)) == -1) {
         perror("Error reading file");
         close(fd);
         return 1;
@@ -45,8 +32,9 @@ unsigned long read_file(const char* filename, unsigned long offset) {
 
 // Function implementation for -frameinfo option
 void process_frameinfo(unsigned long pfn) {
-    unsigned long pageFlags = read_file("/proc/kpageflags", pfn);
-    unsigned long pageCounts = read_file("/proc/kpagecount", pfn);
+    unsigned long offset = pfn * sizeof(unsigned long);
+    unsigned long pageFlags = read_file("/proc/kpageflags", offset);
+    unsigned long pageCounts = read_file("/proc/kpagecount", offset);
     printf("%lu\n%lu\n", pageFlags, pageCounts);
 }
 
@@ -139,6 +127,45 @@ void process_mapallin(int pid) {
 void process_alltablesize(int pid) {
     // Function implementation for -alltablesize option
     printf("Processing -alltablesize: %d\n", pid);
+}
+
+void printBinary(unsigned char byte) {
+    for (int i = 8 - 1; i >= 0; i--) {
+        unsigned char mask = 1 << i;
+        putchar((byte & mask) ? '1' : '0');
+    }
+}
+
+void print_file() {
+    int fd = open("/proc/kpageflags", O_RDONLY);  // Open the file in read-only mode
+
+    if (fd == -1) {
+        perror("Failed to open the file");
+    }
+
+    unsigned char buffer[BUFFER_SIZE];
+    ssize_t bytesRead;
+    off_t frameNumber = 0;
+
+    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0 && frameNumber < 10) {
+        printf("0x%llx: ", (long long) frameNumber);
+        for (int i = 0; i < bytesRead; i++) {
+            printBinary(buffer[i]);
+
+            if ((i + 1) % (BUFFER_SIZE / 8) == 0)
+                printf(" ");
+        }
+
+        printf("\n");
+        frameNumber++;
+    }
+
+    if (bytesRead == -1) {
+        perror("Failed to read the file");
+        close(fd);
+    }
+
+    close(fd);
 }
 
 int main(int argc, char* argv[]) {
