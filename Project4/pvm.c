@@ -138,8 +138,16 @@ void process_mapva(int pid, unsigned long va) {
 
     char filename[128];
     snprintf(filename, sizeof(filename), "/proc/%d/pagemap", pid);
-    unsigned long pfn = read_file(filename, vpn);
-    printf("pfn: %lu\n", pfn);
+    unsigned long pagemap_entry = read_file(filename, vpn);
+    unsigned long present_bit = pagemap_entry >> 63;
+
+    if (present_bit == 0) {
+        printf("Page is not present in memory!\n");
+        return;
+    }
+    unsigned long page_offset = (va << 52) >> 52;
+    unsigned long pa = (pagemap_entry << 12) + page_offset;
+    printf("virtual address = 0x%016lx, physical address: 0x%016lx\n", va, pa);
 }
 
 void process_pte(int pid, const char* va) {
@@ -228,7 +236,7 @@ int main(int argc, char* argv[]) {
         int pid = atoi(argv[3]);
         //process_memused(pid);
     } else if (strcmp(argv[1], "-mapva") == 0) {
-        if (argc < 5) {
+        if (argc < 4) {
             printf("Invalid number of arguments for -mapva\n");
             return 1;
         }
