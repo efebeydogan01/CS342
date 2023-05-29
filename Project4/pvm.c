@@ -22,7 +22,6 @@ int isAddressInMemoryRange(unsigned long va, int pid) {
     int buffer_size = 256;
     char buffer[buffer_size];
 
-    int inRange = 0;
     while (fgets(buffer, sizeof(buffer), mapsFile) != NULL) {
         char *addresses = strtok(buffer, " ");
 
@@ -178,17 +177,18 @@ void process_frameinfo(unsigned long pfn)
 //      1: if page present in memory
 //      0: if page swapped out
 //     -1: if page not used
-int check_page(unsigned long pagemap_entry) {
+int check_page(unsigned long pagemap_entry, int pid, unsigned long va) {
+    // page not used
+    if (!isAddressInMemoryRange(va, pid))
+        return -1;
+
     if (pagemap_entry & (1UL << 63)) {
         // Page present in memory
         return 1;
-    } else if (pagemap_entry & (1UL << 62)) {
-        // Page swapped out
-        return 0;
-    } else {
-        // Page not used
-        return -1;
     }
+
+    // page not in memory
+    return 0;
 }
 
 // printFlag = 0: print va and pa
@@ -202,7 +202,7 @@ void process_mapva(int pid, unsigned long va, int printFlag)
     char filename[128];
     snprintf(filename, sizeof(filename), "/proc/%d/pagemap", pid);
     unsigned long pagemap_entry = read_file(filename, vpn);
-    int check = check_page(pagemap_entry);
+    int check = check_page(pagemap_entry, pid, va);
 
     if (printFlag == 0) {
         printf("virtual address = 0x%016lx ", va);
@@ -226,7 +226,6 @@ void process_mapva(int pid, unsigned long va, int printFlag)
         printf("not-in-memory\n");
     }
     else {
-        printf("%016lx ", pagemap_entry);
         printf("unused\n");
     }
 }
