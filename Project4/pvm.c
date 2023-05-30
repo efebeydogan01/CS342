@@ -32,6 +32,7 @@ int isAddressInMemoryRange(unsigned long va, int pid) {
         unsigned long end = strtoul(addressEnd, NULL, 16);
 
         if (isAddressInRange(va, start, end)) {
+            fclose(mapsFile);
             return 1;
         }
     }
@@ -230,10 +231,45 @@ void process_mapva(int pid, unsigned long va, int printFlag)
     }
 }
 
-void process_pte(int pid, const char *va)
+void process_pte(int pid, unsigned long va)
 {
-    // Function implementation for -pte option
-    printf("Processing -pte: %d, %s\n", pid, va);
+    // Function implementation for -mapva option
+    unsigned long vpn = va >> 12;
+    vpn = (vpn << 16) >> 16;
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "/proc/%d/pagemap", pid);
+    unsigned long pagemap_entry = read_file(filename, vpn);
+    int check = check_page(pagemap_entry, pid, va);
+
+    unsigned long present = (pagemap_entry & (1UL << 63)) >> 63;
+    unsigned long swapped = (pagemap_entry & (1UL << 62)) >> 62;
+    unsigned long file_anon = (pagemap_entry & (1UL << 61)) >> 61;
+    unsigned long exclusive = (pagemap_entry & (1UL << 56)) >> 56;
+    unsigned long soft_dirty = (pagemap_entry & (1UL << 55)) >> 55;
+
+    printf("[vaddr=0x%012lx, vpn=0x%09lx]: present=%lu, swapped=%lu, ", va, vpn, present, swapped);
+
+    if (swapped == 1UL){
+        unsigned long swap_type = (pagemap_entry >> 59) << 59;
+        unsigned long swap_offset = ((pagemap_entry << 5) >> 15) << 15;
+        printf("swap-type: 0x%05lx, swap-offset: 0x%050lx, ", swap_type, swap_offset);
+    }
+
+    printf("file-anon=%lu, exclusive=%lu, softdirty=%lu, ", file_anon, exclusive, soft_dirty);
+
+    if (check == 1) {
+        unsigned long page_offset = (va << 52) >> 52;
+        unsigned long pfn = (pagemap_entry << 12) >> 12;
+        unsigned long pa = (pagemap_entry << 12) + page_offset;
+        printf("page_offset=0x%03lx, pfn=0x%09lx, physical-address=0x%016lx\n", page_offset, pfn, pa);
+    }
+    else if (check == 0) {
+        printf("not-in-memory\n");
+    }
+    else {
+        printf("unused\n");
+    }
 }
 
 void process_maprange(int pid, unsigned long va1, unsigned long va2)
@@ -350,13 +386,13 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(argv[1], "-pte") == 0)
     {
-        if (argc < 5)
+        if (argc < 4)
         {
             printf("Invalid number of arguments for -pte\n");
             return 1;
         }
-        int pid = atoi(argv[3]);
-        const char *va = argv[4];
+        int pid = atoi(argv[2]);
+        unsigned long va = strtoul(argv[3], NULL, 0);
         process_pte(pid, va);
     }
     else if (strcmp(argv[1], "-maprange") == 0)
