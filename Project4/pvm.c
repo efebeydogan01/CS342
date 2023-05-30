@@ -173,7 +173,6 @@ void get_physical_memory_sizes(int pid, unsigned long* exclusiveSize, unsigned l
 
         for (unsigned long page = startPage; page < endPage; ++page) {
             char pgMap[128];
-            printf("page no: %lu ", page);
 
             snprintf(pgMap, sizeof(pgMap), "/proc/%d/pagemap", pid);
             
@@ -186,15 +185,11 @@ void get_physical_memory_sizes(int pid, unsigned long* exclusiveSize, unsigned l
             }
             
             unsigned long mappingCount = read_file("/proc/kpagecount", pfn);
-            printf("mapping count: %lu \n", mappingCount);
-            if (mappingCount == 0) {
-                continue;
-            } else if (mappingCount == 1){
+            if (mappingCount == 1){
                 exclusivePages++;
             }
             totalPages++;
         }
-        break;
     }
 
     fclose(file);
@@ -212,7 +207,7 @@ void process_memused(int pid) {
     get_physical_memory_sizes(pid, &exclusiveMemorySize, &inclusiveMemorySize);
     
     // Print the results
-    printf("(pid=%d) memused: virtual = %lu KB, mappedonce = %lu KB, pmem_all = %lu KB", 
+    printf("(pid=%d) memused: virtual = %lu KB, mappedonce = %lu KB, pmem_all = %lu KB\n", 
             pid, 
             virtualMemorySize, 
             exclusiveMemorySize, 
