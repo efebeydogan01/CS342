@@ -171,8 +171,10 @@ void get_physical_memory_sizes(int pid, unsigned long* exclusiveSize, unsigned l
         unsigned long startPage = start / PAGE_SIZE;
         unsigned long endPage = end / PAGE_SIZE;
 
-        for (unsigned long page = startPage; page <= endPage; ++page) {
+        for (unsigned long page = startPage; page < endPage; ++page) {
             char pgMap[128];
+            printf("page no: %lu ", page);
+
             snprintf(pgMap, sizeof(pgMap), "/proc/%d/pagemap", pid);
             
             unsigned long pfn = read_file(pgMap, page);
@@ -184,6 +186,7 @@ void get_physical_memory_sizes(int pid, unsigned long* exclusiveSize, unsigned l
             }
             
             unsigned long mappingCount = read_file("/proc/kpagecount", pfn);
+            printf("mapping count: %lu \n", mappingCount);
             if (mappingCount == 0) {
                 continue;
             } else if (mappingCount == 1){
@@ -191,6 +194,7 @@ void get_physical_memory_sizes(int pid, unsigned long* exclusiveSize, unsigned l
             }
             totalPages++;
         }
+        break;
     }
 
     fclose(file);
@@ -203,11 +207,13 @@ void process_memused(int pid) {
     unsigned long virtualMemorySize = get_virtual_memory_size(pid);
 
     // Calculate physical memory sizes
-    unsigned long exclusiveMemorySize, inclusiveMemorySize;
+    unsigned long exclusiveMemorySize = 0;
+    unsigned long inclusiveMemorySize = 0;
     get_physical_memory_sizes(pid, &exclusiveMemorySize, &inclusiveMemorySize);
     
     // Print the results
-    printf("(pid = %d) memused: virtual = %lu KB,  mappedonce = %lu KB, pmem_all = %lu KB", pid, 
+    printf("(pid=%d) memused: virtual = %lu KB, mappedonce = %lu KB, pmem_all = %lu KB", 
+            pid, 
             virtualMemorySize, 
             exclusiveMemorySize, 
             inclusiveMemorySize);
@@ -392,7 +398,7 @@ void process_mapallin(int pid)
 
             if (pagemap_entry & (1UL << 63)) {
                 unsigned long pfn = (pagemap_entry << 9) >> 9;
-                printf("mapping vpn=0x%09lx , pfn=0x%09lx\n \n", vpn, pfn);
+                printf("mapping vpn=0x%09lx , pfn=0x%09lx\n", vpn, pfn);
             }
         }
     }
