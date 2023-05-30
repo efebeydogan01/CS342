@@ -403,7 +403,14 @@ void process_mapallin(int pid)
 void process_alltablesize(int pid)
 {
     // Function implementation for -alltablesize option
-    printf("Processing -alltablesize: %d\n", pid);
+    unsigned long totalVM = get_virtual_memory_size(pid);
+    unsigned long fourthLevel = totalVM >> 11;
+    unsigned long thirdLevel = fourthLevel >> 9;
+    unsigned long secondLevel = thirdLevel >> 9;
+    
+    unsigned long answer = (fourthLevel + thirdLevel + secondLevel + 1) >> 9;
+    answer = answer * 8; 
+    printf("alltablesize: %lu", answer);
 }
 
 void printBinary(unsigned char byte)
