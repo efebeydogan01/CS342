@@ -7,12 +7,18 @@
 #define BUFFER_SIZE 8
 #define PAGE_SIZE 4096
 
+// necessary numbers for page table size calculation (alltablesize command)
+#define FOURTH_LEVEL_MAX 134217728
+#define THIRD_LEVEL_MAX 262144
+#define SECOND_LEVEL_MAX 512
+#define PAGE_TABLE_ENTRY_SIZE 512
+
 int isAddressInRange(unsigned long address, unsigned long start, unsigned long end) {
     return (address >= start && address < end);
 }
 // function to parse the maps file to see if a given virtual memory is among the virtual memory space of a process
 int isAddressInMemoryRange(unsigned long va, int pid) {
-    char mapsFilePath[20];
+    char mapsFilePath[256];
     snprintf(mapsFilePath, sizeof(mapsFilePath), "/proc/%d/maps", pid);
 
     FILE *mapsFile = fopen(mapsFilePath, "r");
@@ -400,17 +406,80 @@ void process_mapallin(int pid)
     fclose(file);
 }
 
+int existsInArray(unsigned long el, unsigned long *arr, unsigned long size) {
+    for (unsigned long i = 0; i < size; i++) {
+        if (arr[i] == el)
+            return 1;
+    }
+    return 0;
+}
+
+unsigned long* allocateArray(unsigned long initSize) {
+    unsigned long* res = (unsigned long *) malloc(sizeof(unsigned long) * initSize);
+    return res;
+}
+
+void insertArray(unsigned long el, unsigned long **arr, unsigned long *size, unsigned long *curMaxSize) {
+    // printf("HERE el: %lu, size: %lu, maxsize: %lu\n", el, *size, *curMaxSize);
+    if (el >= *curMaxSize) {
+        (*curMaxSize) = el + 1;
+        *arr = (unsigned long *) realloc(*arr, (*curMaxSize) * sizeof(unsigned long)); 
+    }
+    (*arr)[el] = 1;
+    *size = *curMaxSize;
+}
+
 void process_alltablesize(int pid)
 {
     // Function implementation for -alltablesize option
-    unsigned long totalVM = get_virtual_memory_size(pid);
-    unsigned long fourthLevel = totalVM >> 11;
-    unsigned long thirdLevel = fourthLevel >> 9;
-    unsigned long secondLevel = thirdLevel >> 9;
+    unsigned long fourthLevelSize = 0;
+    unsigned long curMaxSize = 128;
+    unsigned long *fourthLevel = allocateArray(curMaxSize);
+    int thirdLevel[THIRD_LEVEL_MAX];
+    int secondLevel[SECOND_LEVEL_MAX];
+    // initialize all entries to 0
+    for (unsigned long i = 0; i < THIRD_LEVEL_MAX; i++)
+        thirdLevel[i] = 0;
+    for (unsigned long i = 0; i < SECOND_LEVEL_MAX; i++)
+        secondLevel[i] = 0;
+
+    // get table information for the 4th level
+    char mapsFilePath[256];
+    snprintf(mapsFilePath, sizeof(mapsFilePath), "/proc/%d/maps", pid);
     
-    unsigned long answer = (fourthLevel + thirdLevel + secondLevel + 1) >> 9;
-    answer = answer * 8; 
-    printf("alltablesize: %lu", answer);
+    FILE *mapsFile = fopen(mapsFilePath, "r");
+    if (mapsFile == NULL) {
+        perror("Failed to open the maps file");
+        return;
+    }
+
+    int buffer_size = 256;
+    char buffer[buffer_size];
+
+    // the amount of memory a 4th level page table maps
+    unsigned long pageTableMappedMemorySize = 2^21; // bytes
+    while (fgets(buffer, sizeof(buffer), mapsFile) != NULL) {
+        char *addresses = strtok(buffer, " ");
+
+        char *addressStart = strtok(addresses, "-");
+        char *addressEnd = strtok(NULL, "-");
+        
+        unsigned long start = strtoul(addressStart, NULL, 16);
+        unsigned long end = strtoul(addressEnd, NULL, 16);
+
+        for (unsigned long curAddr = start; curAddr < end; curAddr = curAddr + 2^21) {
+            unsigned long tableNo = curAddr >> 21;
+            insertArray(tableNo, &fourthLevel, &fourthLevelSize, &curMaxSize);
+        }
+    }
+    printf("HERE\n");
+    fclose(mapsFile);
+    unsigned long count = 0;
+    for (unsigned long i = 0; i < fourthLevelSize; i++) {
+        if (fourthLevel[i] == 1)
+            count++;
+    }
+    printf("count: %lu", count);
 }
 
 void printBinary(unsigned char byte)
