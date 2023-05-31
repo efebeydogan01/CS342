@@ -421,12 +421,12 @@ unsigned long* allocateArray(unsigned long initSize) {
 
 void insertArray(unsigned long el, unsigned long **arr, unsigned long *size, unsigned long *curMaxSize) {
     // printf("HERE el: %lu, size: %lu, maxsize: %lu\n", el, *size, *curMaxSize);
-    if (el >= *curMaxSize) {
-        (*curMaxSize) = el + 1;
+    if (*curMaxSize <= *size) {
+        (*curMaxSize) = (*curMaxSize) * 2;
         *arr = (unsigned long *) realloc(*arr, (*curMaxSize) * sizeof(unsigned long)); 
     }
-    (*arr)[el] = 1;
-    *size = *curMaxSize;
+    (*arr)[*size] = el;
+    *size = (*size) + 1;
 }
 
 void process_alltablesize(int pid)
