@@ -437,13 +437,6 @@ void process_alltablesize(int pid)
     unsigned long *fourthLevel = allocateArray(curMaxSize);
     unsigned long *thirdLevel = allocateArray(thirdMaxSize);
     unsigned long *secondLevel = allocateArray(secondMaxSize);
-    //int thirdLevel[THIRD_LEVEL_MAX];
-    // int secondLevel[SECOND_LEVEL_MAX];
-    // // initialize all entries to 0
-    // for (unsigned long i = 0; i < THIRD_LEVEL_MAX; i++)
-    //     thirdLevel[i] = 0;
-    // for (unsigned long i = 0; i < SECOND_LEVEL_MAX; i++)
-    //     secondLevel[i] = 0;
 
     // get table information for the 4th level
     char mapsFilePath[256];
@@ -459,7 +452,6 @@ void process_alltablesize(int pid)
     char buffer[buffer_size];
 
     // the amount of memory a 4th level page table maps
-    unsigned long pageTableMappedMemorySize = 2^21; // bytes
     unsigned long prev_start, prev_end, start, end;
     unsigned long line = 0;
     while (fgets(buffer, sizeof(buffer), mapsFile) != NULL) {
@@ -469,7 +461,7 @@ void process_alltablesize(int pid)
         char *addressEnd = strtok(NULL, "-");
         
         start = strtoul(addressStart, NULL, 16) >> 21;
-        end = strtoul(addressEnd, NULL, 16) >> 21;
+        end = (strtoul(addressEnd, NULL, 16) - 1) >> 21;
 
         // check if prev end and start match
         if (line == 0) {
@@ -494,7 +486,7 @@ void process_alltablesize(int pid)
 
     unsigned long lvl1_count = 0, lvl2_count = 0, lvl3_count = 0, lvl4_count = 0;
     for (unsigned long i = 1; i < fourthLevelSize; i+=2) {
-        printf("%lu-%lu\n", fourthLevel[i-1], fourthLevel[i]);
+        //printf("%lu-%lu\n", fourthLevel[i-1], fourthLevel[i]);
         lvl4_count += fourthLevel[i] - fourthLevel[i-1] + 1;
 
         start = fourthLevel[i-1] >> 9;
@@ -507,10 +499,10 @@ void process_alltablesize(int pid)
             insertArray(end, &thirdLevel, &thirdLevelSize, &thirdMaxSize);
         }
     }
-    printf("lvl3-\n");
+    //printf("lvl3-\n");
     for (unsigned long i = 1; i < thirdLevelSize; i+=2) {
         unsigned long start, end;
-        printf("%lu-%lu\n", thirdLevel[i-1], thirdLevel[i]);
+        //printf("%lu-%lu\n", thirdLevel[i-1], thirdLevel[i]);
         lvl3_count += thirdLevel[i] - thirdLevel[i-1] + 1;
 
         start = thirdLevel[i-1] >> 9;
@@ -523,9 +515,9 @@ void process_alltablesize(int pid)
             insertArray(end, &secondLevel, &secondLevelSize, &secondMaxSize);
         }
     }
-    printf("lvl2-\n");
+    //printf("lvl2-\n");
     for (unsigned long i = 1; i < secondLevelSize; i+=2) {
-        printf("%lu-%lu\n", secondLevel[i-1], secondLevel[i]);
+        //printf("%lu-%lu\n", secondLevel[i-1], secondLevel[i]);
         lvl2_count += secondLevel[i] - secondLevel[i-1] + 1;
     }
     lvl1_count = secondLevelSize > 0;
